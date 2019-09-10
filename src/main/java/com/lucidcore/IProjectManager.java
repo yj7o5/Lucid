@@ -1,10 +1,12 @@
 package com.lucidcore;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 public interface IProjectManager {
-    void createProject(String name, String locationDir) throws IOException;
+    File createProject(String name, String locationDir) throws IOException;
     void removeProject(String locationDir) throws IOException;
-    void openProject();
+    File openProject(Component frame);
     void saveProject();
 }

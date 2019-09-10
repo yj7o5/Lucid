@@ -1,13 +1,13 @@
 package com;
 
+import com.components.HeaderMenuPane;
+import com.components.ProjectFolderPane;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.File;
-import java.util.ArrayList;
 
 public class Sandbox {
     private JTree projectPane;
@@ -25,13 +25,24 @@ public class Sandbox {
     private JPopupMenu projectButtonPopupMenu;
     private JPopupMenu fileButtonPopupMenu;
 
-    public Sandbox() {
+    /**
+     * COMPONENTS
+     */
+    private ProjectFolderPane projectFolderPane;
+    private HeaderMenuPane headerMenuPane;
 
+    public Sandbox() {
         // InitProjectPane();
         // InitEditorPane();
         // InitTerminalPane();
-        SetupHeader();
-        SetupProjectPane();
+        // SetupHeader();
+        //SetupProjectPane();
+
+        projectFolderPane = new ProjectFolderPane(projectPane, mainPanel);
+        headerMenuPane = new HeaderMenuPane(fileButton, buildButton, projectFolderPane);
+
+        projectFolderPane.init();
+        headerMenuPane.init();
     }
 
     public static void main(String[] args) {
@@ -46,25 +57,11 @@ public class Sandbox {
         frame.setVisible(true);
     }
 
-    private ArrayList<JMenuItem> createJMenuItems(String[] menus) {
-        ArrayList<JMenuItem> jmenus = new ArrayList<JMenuItem>();
-        for (String menu : menus) {
-            JMenuItem m = new JMenuItem(menu);
-            jmenus.add(m);
+    public void closeProject() {
 
-            m.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (actionEvent.getActionCommand() == "Open Project") {
-                        openProject();
-                    }
-                }
-            });
-        }
-        return jmenus;
     }
 
-    private void openProject() {
+    public void openProject() {
         String projectName = JOptionPane.showInputDialog("Provide Project Name: ");
 
         JFileChooser chooser = new JFileChooser("f:");
@@ -88,44 +85,6 @@ public class Sandbox {
         } else {
             System.out.println("No Selection ");
         }
-    }
-
-    private void SetupHeader() {
-        projectButtonPopupMenu = new JPopupMenu();
-        fileButtonPopupMenu = new JPopupMenu();
-
-        // Project button menus: creating new file; creating new project; or closing project
-        for (JMenuItem menu : createJMenuItems(new String[]{"New File", "New Project", "Close Project"})) {
-            projectButtonPopupMenu.add(menu);
-        }
-        // File button menus: opening another project; saving project
-        for (JMenuItem menu : createJMenuItems(new String[]{"Open Project", "Save Project"})) {
-            fileButtonPopupMenu.add(menu);
-        }
-
-        fileButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (!SwingUtilities.isLeftMouseButton(e)) return;
-
-                fileButtonPopupMenu.show(e.getComponent(), e.getX(), e.getY());
-            }
-        });
-
-        projectPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (!SwingUtilities.isRightMouseButton(e)) return;
-
-                int row = projectPane.getClosestRowForLocation(e.getX(), e.getY());
-
-                // Check if root folders being clicked
-                if (row != 0) return;
-
-                projectPane.setSelectionRow(row);
-                projectButtonPopupMenu.show(e.getComponent(), e.getX(), e.getY());
-            }
-        });
     }
 
     private void SetupProjectPane() {
