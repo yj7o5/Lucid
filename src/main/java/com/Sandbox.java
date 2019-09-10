@@ -4,40 +4,32 @@ import com.components.HeaderMenuPane;
 import com.components.ProjectFolderPane;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.io.File;
 
 public class Sandbox {
-    private JTree projectPane;
+    // MAIN FRAME UI
     private JPanel mainPanel;
+
+    // HEADER UI
+    private JButton fileButton;
+    private JButton buildButton;
+
+    // PROJECT PANEL UI
+    private JTree projectPane;
+
+    // EDITOR SANDBOX UI
     private JTabbedPane tabPane;
     private JEditorPane editorTab1Pane;
     private JTextPane editorTab2Pane;
+
+    // TERMINAL UI
     private JTextArea terminalPane;
 
-    /**
-     * HEADER COMPS
-     */
-    private JButton fileButton;
-    private JButton buildButton;
-    private JPopupMenu projectButtonPopupMenu;
-    private JPopupMenu fileButtonPopupMenu;
-
-    /**
-     * COMPONENTS
-     */
+    // CUSTOM LAYOUT COMPONENTS
     private ProjectFolderPane projectFolderPane;
     private HeaderMenuPane headerMenuPane;
 
     public Sandbox() {
-        // InitProjectPane();
-        // InitEditorPane();
-        // InitTerminalPane();
-        // SetupHeader();
-        //SetupProjectPane();
-
         projectFolderPane = new ProjectFolderPane(projectPane, mainPanel);
         headerMenuPane = new HeaderMenuPane(fileButton, buildButton, projectFolderPane);
 
@@ -55,36 +47,6 @@ public class Sandbox {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-    }
-
-    public void closeProject() {
-
-    }
-
-    public void openProject() {
-        String projectName = JOptionPane.showInputDialog("Provide Project Name: ");
-
-        JFileChooser chooser = new JFileChooser("f:");
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-        if (chooser.showOpenDialog(mainPanel) == JFileChooser.APPROVE_OPTION) {
-            projectPane.setModel(null);
-            File selectedFile = chooser.getSelectedFile();
-            DefaultMutableTreeNode root = new DefaultMutableTreeNode(selectedFile.getName());
-            DefaultTreeModel model = new DefaultTreeModel(root);
-
-            for (File o : selectedFile.listFiles()) {
-                if (o.isHidden()) continue;
-                DefaultMutableTreeNode n = new DefaultMutableTreeNode(o.getName());
-
-                root.add(n);
-            }
-
-            projectPane.setModel(model);
-        } else {
-            System.out.println("No Selection ");
-        }
     }
 
     private void SetupProjectPane() {
