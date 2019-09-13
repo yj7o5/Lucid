@@ -23,10 +23,10 @@ Assumptions:
 
 Timetable:
 ---
-* Sept 5 --- Lo-Fi prototype
-* Sept 12--- 1
-* Sept 26---2,6,7
-* Oct 10---3,4,5
-* Oct 24--- removing code smells
-* Nov 7---new feature 1
-* Nov 21---new feature 2
+* Sept 5  --- Lo-Fi prototype
+* Sept 12 --- 1
+* Sept 26 --- 2,6,7
+* Oct 10  --- 3,4,5
+* Oct 24  --- removing code smells
+* Nov 7   --- new feature 1 / propose configurable syntax theme - background color - font size
+* Nov 21  --- new feature 2 / propose terminal tab
