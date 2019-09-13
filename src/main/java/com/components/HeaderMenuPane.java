@@ -33,11 +33,11 @@ public class HeaderMenuPane {
     }
 
     public void init() {
-        for(Object o : fileMenuHandler.getMenus()) {
-            jfilePopupMenu.add((JMenuItem)o);
+        for(JMenuItem o : fileMenuHandler.getMenus()) {
+            jfilePopupMenu.add(o);
         }
-        for(Object o : buildMenuHandler.getMenus()) {
-            jbuildPopupMenu.add((JMenuItem) o);
+        for(JMenuItem o : buildMenuHandler.getMenus()) {
+            jbuildPopupMenu.add(o);
         }
     }
 
@@ -46,7 +46,7 @@ public class HeaderMenuPane {
         public final static String CLOSE_PROJECT = "Close Project";
         public final static String NEW_PROJECT = "New Project";
 
-        public Object[] getMenus() {
+        public JMenuItem[] getMenus() {
              return Arrays.stream(
                      new String[]{
                          OPEN_PROJECT,
@@ -58,7 +58,7 @@ public class HeaderMenuPane {
                         mi.addActionListener(this);
 
                         return mi;
-                     }).toArray();
+                     }).toArray(JMenuItem[]::new);
         }
 
         @Override
@@ -83,7 +83,7 @@ public class HeaderMenuPane {
         public final static String BUILD_PROJECT = "Build Project";
         public final static String RUN_PROJECT = "Run Project";
 
-        public Object[] getMenus() {
+        public JMenuItem[] getMenus() {
             return Arrays.stream(
                     new String[]{
                             BUILD_PROJECT,
@@ -94,7 +94,7 @@ public class HeaderMenuPane {
                         mi.addActionListener(this);
 
                         return mi;
-                    }).toArray();
+                    }).toArray(JMenuItem[]::new);
         }
 
         @Override

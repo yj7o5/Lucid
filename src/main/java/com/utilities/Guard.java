@@ -1,4 +1,4 @@
-package com.lucidcore;
+package com.utilities;
 
 public class Guard {
     public static Guard newGuard() {
@@ -11,5 +11,9 @@ public class Guard {
         if(arg == null || arg.equals("")) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    public static boolean safeNullCheck(String arg) {
+        return arg == null || arg.equals("");
     }
 }

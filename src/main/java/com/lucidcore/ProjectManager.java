@@ -1,5 +1,7 @@
 package com.lucidcore;
 
+import com.utilities.Guard;
+
 import javax.management.InvalidApplicationException;
 import javax.swing.*;
 import java.awt.*;
