@@ -1,4 +1,4 @@
-package com.lucidcore;
+package com.core;
 
 import java.awt.*;
 import java.io.File;

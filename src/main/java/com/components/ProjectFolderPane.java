@@ -1,7 +1,7 @@
 package com.components;
 
-import com.lucidcore.IProjectManager;
-import com.lucidcore.ProjectManager;
+import com.core.IProjectManager;
+import com.core.ProjectManager;
 import com.utilities.Guard;
 
 import javax.swing.*;

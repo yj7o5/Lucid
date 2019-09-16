@@ -1,7 +1,8 @@
-package com.lucidcore;
+package com.core.compilers;
 
 import java.io.File;
 
 public interface ICodeCompilationUnit {
-    String compile(File location);
+    String compile();
 }
+
