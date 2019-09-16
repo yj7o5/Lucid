@@ -15,7 +15,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
     // expect a main.java file that should contain the main method
     public String compile() {
         if(workingDirectory == null || !workingDirectory.exists()) {
-            throw new IllegalArgumentException(String.format("Invalid project directory provided for compilation: %s", JavaCompilationUnit.class.getName()))
+            throw new IllegalArgumentException(String.format("Invalid project directory provided for compilation: %s", JavaCompilationUnit.class.getName()));
         }
 
         String command = getCodeCompilationCommand(workingDirectory);
@@ -37,7 +37,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
             InputStream es = p.getErrorStream();
 
             // wait for program to finish
-            int _ = p.waitFor();
+            p.waitFor();
 
             // anything other than 0 means error of some kind
             if (p.exitValue() != 0) {
@@ -51,7 +51,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
         } catch (IOException e) {
             executionResult.append(String.format("Error executing command: %s\nTrace: %s", command, e.getStackTrace()));
         } catch (Exception e) {
-            executionResult.append(String.format("Exception: %s\nStack: %s", e.getMessage(), e.getStackTrace());
+            executionResult.append(String.format("Exception: %s\nStack: %s", e.getMessage(), e.getStackTrace()));
         }
 
         return executionResult.toString();
