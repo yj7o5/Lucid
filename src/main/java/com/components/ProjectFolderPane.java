@@ -7,10 +7,12 @@ import com.utilities.Guard;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ProjectFolderPane {
     private JTree projectFolderComponent;
@@ -23,9 +25,14 @@ public class ProjectFolderPane {
     private IProjectManager projectManager;
     private JPanel mainFrame;
 
-    public ProjectFolderPane(JTree comp, JPanel frame) {
+    private EditorPane editorPane;
+
+    File currentDirectory;
+
+    public ProjectFolderPane(JTree comp, JPanel frame, EditorPane ePane) {
         projectFolderComponent = comp;
         mainFrame = frame;
+        editorPane = ePane;
 
         projectFolderMenuComponent = new JPopupMenu();
         projectFileMenuComponent = new JPopupMenu();
@@ -95,6 +102,8 @@ public class ProjectFolderPane {
             return;
         }
 
+        currentDirectory = dir;
+
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(dir.getName());
         DefaultTreeModel model = new DefaultTreeModel(root);
 
@@ -115,6 +124,19 @@ public class ProjectFolderPane {
             m.addActionListener(menuHandler);
         }
         return jmenus;
+    }
+
+    private String getFileContent(String fileName) throws IOException {
+        String path = String.format("%s/%s", currentDirectory.getAbsolutePath(), fileName);
+        BufferedReader reader = new BufferedReader(new FileReader(path));
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ((line = reader.readLine()) != null)
+        {
+            sb.append(line + "\n");
+        }
+        reader.close();
+        return sb.toString();
     }
 
     private class MenuClickHandler implements ActionListener {
@@ -176,15 +198,30 @@ public class ProjectFolderPane {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (!SwingUtilities.isRightMouseButton(e)) return;
-
             int x = e.getX(), y = e.getY(),
-                row = projectFolderComponent.getClosestRowForLocation(x, y);
+                    row = projectFolderComponent.getClosestRowForLocation(x, y);
 
             projectFolderComponent.setSelectionRow(row);
 
-            if (row == 0) projectFolderMenuComponent.show(e.getComponent(), x, y);
-            else projectFileMenuComponent.show(e.getComponent(), x, y);
+            if (SwingUtilities.isRightMouseButton(e))
+            {
+                if (row == 0) projectFolderMenuComponent.show(e.getComponent(), x, y);
+                // else projectFileMenuComponent.show(e.getComponent(), x, y);
+            }
+            // check if double clicked
+            else if (e.getClickCount() == 2) {
+                TreePath tp = projectFolderComponent.getClosestPathForLocation(x, y);
+                String name = tp.getLastPathComponent().toString();
+                try {
+                    String content = getFileContent(name);
+                    editorPane.openEditor(name, content);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                String message = Arrays.stream(tp.getPath()).map(s -> s.toString()).collect(Collectors.joining("/"));
+                JOptionPane.showMessageDialog(mainFrame, message);
+            }
         }
     }
 }
