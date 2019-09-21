@@ -29,7 +29,7 @@ public class EditorPane implements MouseListener {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout(0, 0));
 
-        JEditorPane editorPane = new JEditorPane();
+        JTextPane editorPane = new JTextPane();
 
         panel.add(editorPane, BorderLayout.CENTER);
 
