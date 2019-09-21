@@ -1,13 +1,13 @@
 package com.components;
 
-import com.resources.Resources;
-
+import com.external.CloseTabIcon;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
-public class EditorPane {
+public class EditorPane implements MouseListener {
     private ArrayList<Editor> editors;
     private JPanel tabContainers;
 
@@ -17,6 +17,8 @@ public class EditorPane {
         editors = new ArrayList<Editor>();
         tabs = jTabs;
         tabContainers = frame;
+
+        tabs.addMouseListener(this);
     }
 
     public void openEditor(String name, String content) {
@@ -31,16 +33,41 @@ public class EditorPane {
 
         panel.add(editorPane, BorderLayout.CENTER);
 
-        ImageIcon icon = Resources.getIcon("close.png");
-
-        tabs.
-        tabs.addTab(name, icon, panel);
+        tabs.addTab(name, new CloseTabIcon(null), panel);
 
         Editor editor = new Editor(name, editorPane, content);
         editors.add(editor);
     }
 
-    private void addTab(String content) {
+    public void mouseClicked(MouseEvent e) {
+        handleTabClose(e);
+        handleTabSwitch(e);
+    }
+
+    private void handleTabClose(MouseEvent e) {
+        int tabIndex = tabs.getUI().tabForCoordinate(tabs, e.getX(), e.getY());
+        if (tabIndex < 0) return;
+
+        Rectangle r = ((CloseTabIcon)tabs.getIconAt(tabIndex)).getBounds();
+
+        if (r.contains(e.getX(), e.getY())) {
+            removeEditorAtIndex(tabIndex);
+        }
+    }
+
+    private void removeEditorAtIndex(int tabIndex) {
+        String fileName = tabs.getTitleAt(tabIndex);
+        editors.removeIf(f -> f.getFileName().equalsIgnoreCase(fileName));
+
+        tabs.removeTabAt(tabIndex);
+    }
+
+    private void handleTabSwitch(MouseEvent e) {
 
     }
+
+    public void mousePressed(MouseEvent mouseEvent) { }
+    public void mouseReleased(MouseEvent mouseEvent) { }
+    public void mouseEntered(MouseEvent mouseEvent) { }
+    public void mouseExited(MouseEvent mouseEvent) { }
 }
