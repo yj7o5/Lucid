@@ -23,7 +23,7 @@ public class Editor {
     // Indicates tells whether modifications to current document hasn't been saved yet
     private boolean isPrestine;
 
-    public final static Pattern tokenPattern = Pattern.compile("(([\"'])(?:(?=(\\\\?))\\3.)*?\\2)|(if)|(else)|(for)|(while)|(\\+)|(\\-)|(/)|(\\|\\|)");
+    public final static Pattern tokenPattern = Pattern.compile("(([\"'])(?:(?=(\\\\?))\\3.)*?\\2)|(if)|(else)|(for)|(while)|(\\+)|(\\-)|(/)|(\\|\\|)|(&&)");
 
     public Editor(String name, JTextPane jEditorPane, String content) {
         fileName = name;
@@ -37,7 +37,7 @@ public class Editor {
         return fileName;
     }
 
-    public boolean areChangesSaved() { return !isPrestine; }
+    public boolean hasChanged() { return !isPrestine; }
 
     private class EditorDocumentListener implements DocumentListener {
         final PublishSubject<DocumentEvent> documentEventSubject = PublishSubject.create();
@@ -45,6 +45,7 @@ public class Editor {
         public EditorDocumentListener() {
             documentEventSubject
                     .debounce(500,  TimeUnit.MILLISECONDS)
+                    .doOnEach(c -> isPrestine = true)
                     .subscribeOn(Schedulers.io())
                     .subscribe(new EditorStyleConsumer());
         }
@@ -62,16 +63,16 @@ public class Editor {
     private class EditorStyleConsumer implements Consumer<DocumentEvent> {
         public Map<Keywords, Color> keywordColorMap = new HashMap<Keywords, Color>();
 
-        public void setStyledTextSet(Keywords keyword, int startIndex, int endIndex) {
+        public void highlight(Keywords keyword, int startIndex, int endIndex, boolean b) {
             MutableAttributeSet set = new SimpleAttributeSet();
 
             StyleConstants.setForeground(set, keywordColorMap.get(keyword));
-            editorPane.getStyledDocument().setCharacterAttributes(startIndex, endIndex, set, true);
+            editorPane.getStyledDocument().setCharacterAttributes(startIndex, endIndex, set, b);
         }
 
         private void matchAndApplyStyleIfGroup(int group, Matcher matcher, Keywords style) {
             if (matcher.group(group) != null) {
-                setStyledTextSet(style, matcher.start(group), matcher.end(group));
+                highlight(style, matcher.start(group), matcher.end(group) - matcher.start(group), false);
             }
         }
 
@@ -84,30 +85,38 @@ public class Editor {
             keywordColorMap.put(Keywords.Subtraction, Color.RED);
             keywordColorMap.put(Keywords.Division, Color.RED);
             keywordColorMap.put(Keywords.LogicalOr, Color.RED);
+            keywordColorMap.put(Keywords.LogicalAnd, Color.RED);
             keywordColorMap.put(Keywords.StringText, Color.GREEN);
             keywordColorMap.put(Keywords.Default, Color.BLACK);
+
+            reset();
+        }
+
+        private void reset() {
+            int length = editorPane.getDocument().getLength();
+            highlight(Keywords.Default, 0, length, false);
         }
 
         @Override
-        public void accept(DocumentEvent documentEvent) throws Exception {
-            try {
-                Matcher matcher = tokenPattern.matcher(documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength()));
+        public void accept(DocumentEvent documentEvent) {
+            reset();
 
-                while (matcher.find()) {
-                    System.out.println(String.format("group: %s", matcher.group(matcher.group())));
+            Matcher matcher = tokenPattern.matcher(editorPane.getText());
 
-                    matchAndApplyStyleIfGroup(4, matcher, Keywords.StringText);
-                    matchAndApplyStyleIfGroup(5, matcher, Keywords.If);
-                    matchAndApplyStyleIfGroup(6, matcher, Keywords.Else);
-                    matchAndApplyStyleIfGroup(7, matcher, Keywords.For);
-                    matchAndApplyStyleIfGroup(8, matcher, Keywords.While);
-                    matchAndApplyStyleIfGroup(9, matcher, Keywords.Addition);
-                    matchAndApplyStyleIfGroup(10, matcher, Keywords.Subtraction);
-                    matchAndApplyStyleIfGroup(11, matcher, Keywords.Division);
-                    matchAndApplyStyleIfGroup(12, matcher, Keywords.LogicalOr);
-                }
+            while (matcher.find()) {
+                System.out.println(String.format("group: %s start: %s end: %s", matcher.group(), matcher.start(2), matcher.end(2)));
+
+                matchAndApplyStyleIfGroup(1, matcher, Keywords.StringText);
+                matchAndApplyStyleIfGroup(4, matcher, Keywords.If);
+                matchAndApplyStyleIfGroup(5, matcher, Keywords.Else);
+                matchAndApplyStyleIfGroup(6, matcher, Keywords.For);
+                matchAndApplyStyleIfGroup(7, matcher, Keywords.While);
+                matchAndApplyStyleIfGroup(8, matcher, Keywords.Addition);
+                matchAndApplyStyleIfGroup(9, matcher, Keywords.Subtraction);
+                matchAndApplyStyleIfGroup(10, matcher, Keywords.Division);
+                matchAndApplyStyleIfGroup(11, matcher, Keywords.LogicalOr);
+                matchAndApplyStyleIfGroup(12, matcher, Keywords.LogicalAnd);
             }
-            catch (BadLocationException e) { /* remain silent */}
         }
     }
 
