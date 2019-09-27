@@ -9,6 +9,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,15 +20,18 @@ import java.util.regex.Pattern;
 public class Editor {
     private JTextPane editorPane;
     private String fileName;
+    private EditorPane parentContainer;
 
     // Indicates tells whether modifications to current document hasn't been saved yet
     private boolean isPrestine;
 
     public final static Pattern tokenPattern = Pattern.compile("(([\"'])(?:(?=(\\\\?))\\3.)*?\\2)|(if)|(else)|(for)|(while)|(\\+)|(\\-)|(/)|(\\|\\|)|(&&)");
 
-    public Editor(String name, JTextPane jEditorPane, String content) {
+    public Editor(String name, JTextPane jEditorPane, String content, EditorPane parent) {
         fileName = name;
         editorPane = jEditorPane;
+        parentContainer = parent;
+
         editorPane.setText(content);
 
         editorPane.getDocument().addDocumentListener(new EditorDocumentListener());
@@ -37,6 +41,12 @@ public class Editor {
         return fileName;
     }
 
+    public void editorChanged() {
+        isPrestine = true;
+
+
+    }
+
     public boolean hasChanged() { return !isPrestine; }
 
     private class EditorDocumentListener implements DocumentListener {
@@ -44,8 +54,8 @@ public class Editor {
 
         public EditorDocumentListener() {
             documentEventSubject
-                    .debounce(500,  TimeUnit.MILLISECONDS)
-                    .doOnEach(c -> isPrestine = true)
+                    .debounce(250,  TimeUnit.MILLISECONDS)
+                    .doOnEach(c -> editorChanged())
                     .subscribeOn(Schedulers.io())
                     .subscribe(new EditorStyleConsumer());
         }
@@ -118,17 +128,6 @@ public class Editor {
                 matchAndApplyStyleIfGroup(12, matcher, Keywords.LogicalAnd);
             }
         }
-    }
-
-    private class TokenSetStyle {
-        public String color;
-        public ArrayList<Keywords> keywords;
-    }
-
-    private class Token {
-        public int offset;
-        public int length;
-        public Keywords keyword;
     }
 
     private enum Keywords {

@@ -3,11 +3,13 @@ package com.components;
 import com.external.CloseTabIcon;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
-public class EditorPane implements MouseListener {
+public class EditorPane implements MouseListener, ActionListener {
     private ArrayList<Editor> editors;
     private JPanel tabContainers;
 
@@ -30,8 +32,9 @@ public class EditorPane implements MouseListener {
         panel.setLayout(new BorderLayout(0, 0));
 
         JTextPane editorPane = new JTextPane();
+        JScrollPane sp = new JScrollPane(editorPane);
 
-        panel.add(editorPane, BorderLayout.CENTER);
+        panel.add(sp, BorderLayout.CENTER);
 
         tabs.addTab(name, new CloseTabIcon(null), panel);
 
@@ -70,4 +73,8 @@ public class EditorPane implements MouseListener {
     public void mouseReleased(MouseEvent mouseEvent) { }
     public void mouseEntered(MouseEvent mouseEvent) { }
     public void mouseExited(MouseEvent mouseEvent) { }
+
+    public void actionPerformed(ActionEvent actionEvent) {
+        actionEvent.g
+    }
 }

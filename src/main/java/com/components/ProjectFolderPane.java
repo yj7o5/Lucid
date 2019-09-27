@@ -91,6 +91,13 @@ public class ProjectFolderPane {
         }
     }
 
+    public void newFile() throws IOException {
+        String fileName = JOptionPane.showInputDialog(mainFrame, "Enter new file; ");
+        File.createTempFile(fileName, "", currentDirectory);
+
+        renderTree(currentDirectory);
+    }
+
     public void saveProject() {
         // TODO: output to terminal -- create a live feed terminal listening for print commands
         JOptionPane.showMessageDialog(mainFrame, "Project Saved!");
@@ -139,11 +146,16 @@ public class ProjectFolderPane {
         return sb.toString();
     }
 
+    private void saveFile() {
+
+    }
+
     private class MenuClickHandler implements ActionListener {
         public final static String NEW_FILE = "New File";
         public final static String NEW_PROJECT = "New Project";
         public final static String CLOSE_PROJECT = "Close Project";
         public final static String SAVE_PROJECT = "Save Project";
+        public final static String SAVE_FILE = "Save File";
 
         public JMenuItem[] getMenus() {
             return Arrays.stream(
@@ -151,7 +163,8 @@ public class ProjectFolderPane {
                             NEW_FILE,
                             NEW_PROJECT,
                             CLOSE_PROJECT,
-                            SAVE_PROJECT
+                            SAVE_PROJECT,
+                            SAVE_FILE
                     })
                     .map(menu -> {
                         JMenuItem mi = new JMenuItem(menu);
@@ -163,17 +176,26 @@ public class ProjectFolderPane {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            switch(actionEvent.getActionCommand()) {
-                case HeaderMenuPane.FileMenuHandler.CLOSE_PROJECT:
-                    closeProject();
-                    return;
-                case SAVE_PROJECT:
-                    saveProject();
-                    return;
+            try {
+                switch (actionEvent.getActionCommand()) {
+                    case HeaderMenuPane.FileMenuHandler.CLOSE_PROJECT:
+                        closeProject();
+                        return;
+                    case SAVE_PROJECT:
+                        saveProject();
+                        return;
+                    case NEW_FILE:
+                        newFile();
+                        return;
+                    case SAVE_FILE:
+                        saveFile();
+                        return;
 
-                default:
-                    return;
+                    default:
+                        return;
+                }
             }
+            catch(IOException e) {}
         }
     }
 
