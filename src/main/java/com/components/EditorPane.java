@@ -3,13 +3,13 @@ package com.components;
 import com.external.CloseTabIcon;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class EditorPane implements MouseListener, ActionListener {
+public class EditorPane implements MouseListener {
     private ArrayList<Editor> editors;
     private JPanel tabContainers;
 
@@ -23,7 +23,7 @@ public class EditorPane implements MouseListener, ActionListener {
         tabs.addMouseListener(this);
     }
 
-    public void openEditor(String name, String content) {
+    public void openEditor(String name, File file) throws IOException  {
         if (editors.stream().anyMatch(e -> e.getFileName().equalsIgnoreCase(name))) {
             return;
         }
@@ -38,8 +38,14 @@ public class EditorPane implements MouseListener, ActionListener {
 
         tabs.addTab(name, new CloseTabIcon(null), panel);
 
-        Editor editor = new Editor(name, editorPane, content);
+        Editor editor = new Editor(file, editorPane);
         editors.add(editor);
+    }
+
+    public Editor getActiveEditor() {
+        if (editors.isEmpty()) return null;
+
+        return editors.get(tabs.getSelectedIndex());
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -73,8 +79,4 @@ public class EditorPane implements MouseListener, ActionListener {
     public void mouseReleased(MouseEvent mouseEvent) { }
     public void mouseEntered(MouseEvent mouseEvent) { }
     public void mouseExited(MouseEvent mouseEvent) { }
-
-    public void actionPerformed(ActionEvent actionEvent) {
-        actionEvent.g
-    }
 }

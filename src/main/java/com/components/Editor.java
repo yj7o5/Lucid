@@ -2,6 +2,7 @@ package com.components;
 
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
@@ -9,45 +10,58 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Editor {
     private JTextPane editorPane;
     private String fileName;
-    private EditorPane parentContainer;
+    private File file;
 
     // Indicates tells whether modifications to current document hasn't been saved yet
-    private boolean isPrestine;
+    private BehaviorSubject<Boolean> prestine$ = BehaviorSubject.create();
 
     public final static Pattern tokenPattern = Pattern.compile("(([\"'])(?:(?=(\\\\?))\\3.)*?\\2)|(if)|(else)|(for)|(while)|(\\+)|(\\-)|(/)|(\\|\\|)|(&&)");
 
-    public Editor(String name, JTextPane jEditorPane, String content, EditorPane parent) {
-        fileName = name;
+    public Editor(File selectedFile, JTextPane jEditorPane) throws IOException {
+        file = selectedFile;
+        fileName = file.getName();
         editorPane = jEditorPane;
-        parentContainer = parent;
 
-        editorPane.setText(content);
+        String fileContent = Files.readAllLines(Paths.get(selectedFile.getAbsolutePath())).stream().collect(Collectors.joining("\n"));
+        editorPane.setText(fileContent);
 
         editorPane.getDocument().addDocumentListener(new EditorDocumentListener());
+
+        prestine$
+            .distinctUntilChanged()
+            .doOnEach(isPrestine -> System.out.println("File changed")).subscribe();
     }
 
     public String getFileName() {
         return fileName;
     }
 
-    public void editorChanged() {
-        isPrestine = true;
+    public void saveChanges() throws IOException  {
+        // indicate editor file is not longer dirty
+        prestine$.onNext(false);
 
+        String content = editorPane.getText();
+        byte[] bytes = content.getBytes();
 
+        Path path = Paths.get(file.getAbsolutePath());
+        Files.write(path, bytes);
     }
-
-    public boolean hasChanged() { return !isPrestine; }
 
     private class EditorDocumentListener implements DocumentListener {
         final PublishSubject<DocumentEvent> documentEventSubject = PublishSubject.create();
@@ -55,7 +69,7 @@ public class Editor {
         public EditorDocumentListener() {
             documentEventSubject
                     .debounce(250,  TimeUnit.MILLISECONDS)
-                    .doOnEach(c -> editorChanged())
+                    .doOnEach(c -> prestine$.onNext(true))
                     .subscribeOn(Schedulers.io())
                     .subscribe(new EditorStyleConsumer());
         }

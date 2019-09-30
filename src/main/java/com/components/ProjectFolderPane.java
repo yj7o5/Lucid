@@ -12,7 +12,6 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class ProjectFolderPane {
     private JTree projectFolderComponent;
@@ -133,21 +132,17 @@ public class ProjectFolderPane {
         return jmenus;
     }
 
-    private String getFileContent(String fileName) throws IOException {
-        String path = String.format("%s/%s", currentDirectory.getAbsolutePath(), fileName);
-        BufferedReader reader = new BufferedReader(new FileReader(path));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        while ((line = reader.readLine()) != null)
-        {
-            sb.append(line + "\n");
-        }
-        reader.close();
-        return sb.toString();
+    private File getFile(String fileName) {
+        return Arrays.stream(currentDirectory.listFiles())
+                .filter(f -> f.getName().equals(fileName))
+                .findFirst()
+                .orElse(null);
     }
 
-    private void saveFile() {
+    private void saveFile() throws IOException {
+        Editor editor = editorPane.getActiveEditor();
 
+        editor.saveChanges();
     }
 
     private class MenuClickHandler implements ActionListener {
@@ -234,15 +229,15 @@ public class ProjectFolderPane {
             else if (e.getClickCount() == 2) {
                 TreePath tp = projectFolderComponent.getClosestPathForLocation(x, y);
                 String name = tp.getLastPathComponent().toString();
-                try {
-                    String content = getFileContent(name);
-                    editorPane.openEditor(name, content);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
 
-                String message = Arrays.stream(tp.getPath()).map(s -> s.toString()).collect(Collectors.joining("/"));
-                JOptionPane.showMessageDialog(mainFrame, message);
+                File file = getFile(name);
+
+                try {
+                    editorPane.openEditor(name, file);
+                }
+                catch (IOException ex) {
+                    JOptionPane.showMessageDialog(mainFrame, ex.getMessage());
+                }
             }
         }
     }
