@@ -7,8 +7,9 @@ import com.utilities.Guard;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -23,9 +24,14 @@ public class ProjectFolderPane {
     private IProjectManager projectManager;
     private JPanel mainFrame;
 
-    public ProjectFolderPane(JTree comp, JPanel frame) {
+    private EditorPane editorPane;
+
+    File currentDirectory;
+
+    public ProjectFolderPane(JTree comp, JPanel frame, EditorPane ePane) {
         projectFolderComponent = comp;
         mainFrame = frame;
+        editorPane = ePane;
 
         projectFolderMenuComponent = new JPopupMenu();
         projectFileMenuComponent = new JPopupMenu();
@@ -84,6 +90,13 @@ public class ProjectFolderPane {
         }
     }
 
+    public void newFile() throws IOException {
+        String fileName = JOptionPane.showInputDialog(mainFrame, "Enter new file; ");
+        File.createTempFile(fileName, "", currentDirectory);
+
+        renderTree(currentDirectory);
+    }
+
     public void saveProject() {
         // TODO: output to terminal -- create a live feed terminal listening for print commands
         JOptionPane.showMessageDialog(mainFrame, "Project Saved!");
@@ -94,6 +107,8 @@ public class ProjectFolderPane {
             projectFolderComponent.setModel(null);
             return;
         }
+
+        currentDirectory = dir;
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(dir.getName());
         DefaultTreeModel model = new DefaultTreeModel(root);
@@ -117,11 +132,25 @@ public class ProjectFolderPane {
         return jmenus;
     }
 
+    private File getFile(String fileName) {
+        return Arrays.stream(currentDirectory.listFiles())
+                .filter(f -> f.getName().equals(fileName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void saveFile() throws IOException {
+        Editor editor = editorPane.getActiveEditor();
+
+        editor.saveChanges();
+    }
+
     private class MenuClickHandler implements ActionListener {
         public final static String NEW_FILE = "New File";
         public final static String NEW_PROJECT = "New Project";
         public final static String CLOSE_PROJECT = "Close Project";
         public final static String SAVE_PROJECT = "Save Project";
+        public final static String SAVE_FILE = "Save File";
 
         public JMenuItem[] getMenus() {
             return Arrays.stream(
@@ -129,7 +158,8 @@ public class ProjectFolderPane {
                             NEW_FILE,
                             NEW_PROJECT,
                             CLOSE_PROJECT,
-                            SAVE_PROJECT
+                            SAVE_PROJECT,
+                            SAVE_FILE
                     })
                     .map(menu -> {
                         JMenuItem mi = new JMenuItem(menu);
@@ -141,17 +171,26 @@ public class ProjectFolderPane {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            switch(actionEvent.getActionCommand()) {
-                case HeaderMenuPane.FileMenuHandler.CLOSE_PROJECT:
-                    closeProject();
-                    return;
-                case SAVE_PROJECT:
-                    saveProject();
-                    return;
+            try {
+                switch (actionEvent.getActionCommand()) {
+                    case HeaderMenuPane.FileMenuHandler.CLOSE_PROJECT:
+                        closeProject();
+                        return;
+                    case SAVE_PROJECT:
+                        saveProject();
+                        return;
+                    case NEW_FILE:
+                        newFile();
+                        return;
+                    case SAVE_FILE:
+                        saveFile();
+                        return;
 
-                default:
-                    return;
+                    default:
+                        return;
+                }
             }
+            catch(IOException e) {}
         }
     }
 
@@ -176,15 +215,30 @@ public class ProjectFolderPane {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (!SwingUtilities.isRightMouseButton(e)) return;
-
             int x = e.getX(), y = e.getY(),
-                row = projectFolderComponent.getClosestRowForLocation(x, y);
+                    row = projectFolderComponent.getClosestRowForLocation(x, y);
 
             projectFolderComponent.setSelectionRow(row);
 
-            if (row == 0) projectFolderMenuComponent.show(e.getComponent(), x, y);
-            else projectFileMenuComponent.show(e.getComponent(), x, y);
+            if (SwingUtilities.isRightMouseButton(e))
+            {
+                if (row == 0) projectFolderMenuComponent.show(e.getComponent(), x, y);
+                // else projectFileMenuComponent.show(e.getComponent(), x, y);
+            }
+            // check if double clicked
+            else if (e.getClickCount() == 2) {
+                TreePath tp = projectFolderComponent.getClosestPathForLocation(x, y);
+                String name = tp.getLastPathComponent().toString();
+
+                File file = getFile(name);
+
+                try {
+                    editorPane.openEditor(name, file);
+                }
+                catch (IOException ex) {
+                    JOptionPane.showMessageDialog(mainFrame, ex.getMessage());
+                }
+            }
         }
     }
 }
