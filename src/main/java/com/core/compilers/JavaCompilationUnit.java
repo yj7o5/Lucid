@@ -3,7 +3,6 @@ package com.core.compilers;
 import java.io.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class JavaCompilationUnit implements ICodeCompilationUnit {
     private File workingDirectory;
@@ -80,7 +79,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
         // String[] files = getJavaFiles(root);
 
         builder.append(" -cp ");
-        String depFiles = Arrays.stream(dependencies).collect(Collectors.joining(";"));
+        String depFiles = String.join(";", dependencies);
         builder.append(String.join(" \"%s\" ", depFiles));
         builder.append("main.java");
 
