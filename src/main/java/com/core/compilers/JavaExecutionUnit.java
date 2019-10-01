@@ -38,21 +38,30 @@ public class JavaExecutionUnit
         }
 
         //As long as all the files needed are compiled, the only one you actually have to execute it Main.java
-        String command = "java -cp " + workingDirectory.getPath() + " Main";
+        //String command = "java -cp " + workingDirectory.getPath() + " Main";
+        String command[] = {"java -cp", "Main"};
 
         return executeCommand(command);
     }
 
-    public String executeCommand(String command) throws Exception
+    //With inheritIO, I'm not sure it is necessary to return anything from this method, but I'm keeping it until I know
+    //for sure.
+    public String executeCommand(String command[]) throws Exception
     {
         StringBuilder result = new StringBuilder();
 
         try {
-            Process proc = Runtime.getRuntime().exec(command);
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.inheritIO(); //InheritIO: Sets the source and destination for subprocess standard I/O to be the same as those of the current Java process.
+
+            long start = System.nanoTime();
+            Process proc = pb.start(); //Not sure if the process actually starts here, or if it starts in the waitFor like a normal process without ProcessBuilder.
+
+            //Process proc = Runtime.getRuntime().exec(command);
 
 //        String result = proc.getInputStream().toString()
 
-            long start = System.nanoTime();
+
             proc.waitFor();
             long end = System.nanoTime();
 
