@@ -1,5 +1,6 @@
 package com.components;
 
+import com.Sandbox;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
@@ -41,6 +42,8 @@ public class Editor {
         String fileContent = Files.readAllLines(Paths.get(selectedFile.getAbsolutePath())).stream().collect(Collectors.joining("\n"));
         editorPane.setText(fileContent);
 
+        Sandbox.statsFacade.updateStats(fileContent);
+
         editorPane.getDocument().addDocumentListener(new EditorDocumentListener());
 
         prestine$
@@ -81,7 +84,7 @@ public class Editor {
         public void removeUpdate(DocumentEvent documentEvent) { documentEventSubject.onNext(documentEvent); }
 
         @Override
-        public void changedUpdate(DocumentEvent documentEvent) { }
+        public void changedUpdate(DocumentEvent documentEvent) { documentEventSubject.onNext(documentEvent); }
     }
 
     private class EditorStyleConsumer implements Consumer<DocumentEvent> {
@@ -125,11 +128,13 @@ public class Editor {
         public void accept(DocumentEvent documentEvent) {
             reset();
 
-            Matcher matcher = tokenPattern.matcher(editorPane.getText());
+            String updatedText = editorPane.getText();
+
+            updateStats(updatedText);
+
+            Matcher matcher = tokenPattern.matcher(updatedText);
 
             while (matcher.find()) {
-                System.out.println(String.format("group: %s start: %s end: %s", matcher.group(), matcher.start(2), matcher.end(2)));
-
                 matchAndApplyStyleIfGroup(1, matcher, Keywords.StringText);
                 matchAndApplyStyleIfGroup(4, matcher, Keywords.If);
                 matchAndApplyStyleIfGroup(5, matcher, Keywords.Else);
@@ -141,6 +146,15 @@ public class Editor {
                 matchAndApplyStyleIfGroup(11, matcher, Keywords.LogicalOr);
                 matchAndApplyStyleIfGroup(12, matcher, Keywords.LogicalAnd);
             }
+        }
+
+        private void updateStats(String code) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Sandbox.statsFacade.updateStats(code);
+                }
+            });
         }
     }
 
