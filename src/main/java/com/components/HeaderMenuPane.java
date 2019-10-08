@@ -1,5 +1,8 @@
 package com.components;
 
+import com.core.compilers.ICodeCompilationUnit;
+import com.core.compilers.JavaCompilationUnit;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,6 +82,13 @@ public class HeaderMenuPane {
         }
     }
 
+    private void buildProject() {
+        ICodeCompilationUnit cu = new JavaCompilationUnit(projectFolderPane.currentDirectory);
+
+        TerminalPane.Clear();
+        TerminalPane.Write("\n"+cu.compile().Output);
+    }
+
     private class BuildMenuHandler implements ActionListener {
         public final static String BUILD_PROJECT = "Build Project";
         public final static String RUN_PROJECT = "Run Project";
@@ -101,7 +111,8 @@ public class HeaderMenuPane {
         public void actionPerformed(ActionEvent actionEvent) {
             switch(actionEvent.getActionCommand()) {
                 case BUILD_PROJECT:
-                    //projectFolderPane.openProject();
+                    buildProject();
+                    break;
                 case RUN_PROJECT:
                     //projectFolderPane.closeProject();
                 default:
