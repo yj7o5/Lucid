@@ -86,7 +86,7 @@ public class HeaderMenuPane {
         ICodeCompilationUnit cu = new JavaCompilationUnit(projectFolderPane.currentDirectory);
 
         TerminalPane.Clear();
-        TerminalPane.Write("\n"+cu.compile().Output);
+        TerminalPane.Write(cu.compile().Output);
     }
 
     private class BuildMenuHandler implements ActionListener {
