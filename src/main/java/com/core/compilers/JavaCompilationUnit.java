@@ -1,8 +1,8 @@
 package com.core.compilers;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class JavaCompilationUnit implements ICodeCompilationUnit {
     private File workingDirectory;
@@ -12,7 +12,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
     }
 
     // expect a main.java file that should contain the main method
-    public String compile() {
+    public CompilationResult compile() {
         if(workingDirectory == null || !workingDirectory.exists()) {
             throw new IllegalArgumentException(String.format("Invalid project directory provided for compilation: %s", JavaCompilationUnit.class.getName()));
         }
@@ -22,38 +22,35 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
         return executeCommand(command);
     }
 
-    private String executeCommand(String command) {
+    private CompilationResult executeCommand(String command) {
         StringBuilder executionResult = new StringBuilder();
 
         try {
             ProcessBuilder pb = new ProcessBuilder();
             pb.directory(workingDirectory);
+            pb.command(command.split(" "));
 
-            pb.command(command);
             Process p = pb.start();
-
-            InputStream is = p.getInputStream();
-            InputStream es = p.getErrorStream();
 
             // wait for program to finish
             p.waitFor();
 
             // anything other than 0 means error of some kind
-            if (p.exitValue() != 0) {
-                executionResult.append(String.format("Process Error - Exit Code : %s", p.exitValue()));
+            if (p.getErrorStream().read() != -1) {
                 executionResult.append(readProcessOutput(p.getErrorStream()));
 
-                return executionResult.toString();
+                return new CompilationResult(executionResult.toString(), false);
             }
 
-            executionResult.append(p.getInputStream());
+            String result = executionResult.toString();
+            return new CompilationResult(result.trim().isEmpty() ? "Compiled Successfully" : result, p.exitValue() == 0);
         } catch (IOException e) {
-            executionResult.append(String.format("Error executing command: %s\nTrace: %s", command, e.getStackTrace()));
+            executionResult.append(String.format("Error executing command: %s\nDetail: %s", command, e.getMessage()));
         } catch (Exception e) {
             executionResult.append(String.format("Exception: %s\nStack: %s", e.getMessage(), e.getStackTrace()));
         }
 
-        return executionResult.toString();
+        return new CompilationResult("No output", true);
     }
 
     private String readProcessOutput(InputStream stream) {
@@ -61,8 +58,11 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
         byte[] buffer = new byte[1024];
 
         try {
-            while (stream.read(buffer, 0, buffer.length) > 0) {
-                output.append(buffer);
+            int lastRead;
+            while ((lastRead = stream.read(buffer, 0, buffer.length)) > 0) {
+                if (lastRead < buffer.length)
+                    buffer = Arrays.copyOfRange(buffer, 0, lastRead);
+                output.append(new String(buffer, StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             System.err.println(String.format("Error reading compilation output: %s\nTrace: %s", e.getMessage(), e.getStackTrace()));
@@ -78,10 +78,9 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
         String[] dependencies = getDependencies(root);
         // String[] files = getJavaFiles(root);
 
+        // define classpath parameter
         builder.append(" -cp ");
-        String depFiles = String.join(";", dependencies);
-        builder.append(String.join(" \"%s\" ", depFiles));
-        builder.append("main.java");
+        builder.append(". Main.java");
 
         return builder.toString();
     }
