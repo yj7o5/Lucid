@@ -3,6 +3,7 @@ package com;
 import com.components.EditorPane;
 import com.components.HeaderMenuPane;
 import com.components.ProjectFolderPane;
+import com.components.TerminalPane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,11 +30,13 @@ public class Sandbox {
     private ProjectFolderPane projectFolderPane;
     private HeaderMenuPane headerMenuPane;
     private EditorPane editorPane;
+    private TerminalPane terminalCompPane;
 
     public Sandbox() {
         editorPane = new EditorPane(editorContainer, tabPane);
         projectFolderPane = new ProjectFolderPane(projectPane, mainPanel, editorPane);
         headerMenuPane = new HeaderMenuPane(fileButton, buildButton, projectFolderPane);
+        terminalCompPane = new TerminalPane(terminalPane);
 
         projectFolderPane.init();
         headerMenuPane.init();
@@ -89,7 +92,7 @@ public class Sandbox {
         terminalPane.setColumns(0);
         terminalPane.setEditable(false);
         terminalPane.setLineWrap(true);
-        terminalPane.setText("Build Ouput: Successful");
+        terminalPane.setText("");
         terminalPane.setWrapStyleWord(true);
         terminalPane.putClientProperty("caretWidth", new Integer(2));
         editorContainer.add(terminalPane, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, 50), null, 0, false));

@@ -115,6 +115,7 @@ public class ProjectFolderPane {
 
         for(File f : dir.listFiles()) {
             if (f.isHidden()) continue;
+            if (f.getName().endsWith(".class")) continue;
             root.add(new DefaultMutableTreeNode(f.getName()));
         }
 
