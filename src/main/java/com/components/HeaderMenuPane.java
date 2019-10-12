@@ -1,6 +1,8 @@
 package com.components;
 
 import com.core.compilers.ICodeCompilationUnit;
+import com.core.compilers.ICodeExecutionUnit;
+import com.core.compilers.JavaCodeExecutionUnit;
 import com.core.compilers.JavaCompilationUnit;
 
 import javax.swing.*;
@@ -89,6 +91,11 @@ public class HeaderMenuPane {
         TerminalPane.Write(cu.compile().Output);
     }
 
+    private void runProject() {
+        Thread execution = new JavaCodeExecutionUnit(projectFolderPane.currentDirectory, "Main");
+        execution.start();
+    }
+
     private class BuildMenuHandler implements ActionListener {
         public final static String BUILD_PROJECT = "Build Project";
         public final static String RUN_PROJECT = "Run Project";
@@ -114,7 +121,8 @@ public class HeaderMenuPane {
                     buildProject();
                     break;
                 case RUN_PROJECT:
-                    //projectFolderPane.closeProject();
+                    runProject();
+                    break;
                 default:
                     jbuildPopupMenu.show(buildButton, buildButton.getX(), buildButton.getY());
             }

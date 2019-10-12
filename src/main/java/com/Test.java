@@ -2,6 +2,8 @@ package com;
 
 import com.core.ICodeCompiler;
 import com.core.compilers.ICodeCompilationUnit;
+import com.core.compilers.ICodeExecutionUnit;
+import com.core.compilers.JavaCodeExecutionUnit;
 import com.core.compilers.JavaCompilationUnit;
 
 import java.io.IOException;
@@ -13,8 +15,11 @@ public class Test {
         Scanner sc = new Scanner(System.in);
 
         File target = new File("/Users/yawarjamal/Desktop/Discovery");
-        ICodeCompilationUnit compiler = new JavaCompilationUnit(target);
+        // ICodeCompilationUnit compiler = new JavaCompilationUnit(target);
 
-        System.out.println(compiler.compile().Output);
+        ICodeExecutionUnit codeExecution = new JavaCodeExecutionUnit(target, "Main");
+
+        codeExecution.execute();
+        // System.out.println(compiler.compile().Output);
     }
 }
