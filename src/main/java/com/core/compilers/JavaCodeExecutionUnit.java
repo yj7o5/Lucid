@@ -1,20 +1,14 @@
 package com.core.compilers;
 
-/*
-This is just a work in progress, probably not functional yet.
--Quentin
- */
-
 import com.components.TerminalPane;
 
-import javax.print.DocFlavor;
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class JavaCodeExecutionUnit extends Thread implements ICodeExecutionUnit {
     File targetDirectory;
@@ -22,11 +16,11 @@ public class JavaCodeExecutionUnit extends Thread implements ICodeExecutionUnit 
 
     ProcessBuilder pb;
 
+    public final static String INPUT_COMMAND = "input_command";
+
     public JavaCodeExecutionUnit(File dir, String target) {
         targetDirectory = dir;
         targetClass = target;
-
-        TerminalPane.Write("Init Java Code Execution");
     }
 
     @Override
@@ -43,20 +37,27 @@ public class JavaCodeExecutionUnit extends Thread implements ICodeExecutionUnit 
         try {
             Process process = pb.start();
 
-            ProgramReader reader = new ProgramReader(process.getInputStream(), (ev) -> {
-               TerminalPane.Write((String)ev.getSource());
-            }, (ev) -> {
-                // Handle error
-                TerminalPane.Write(((Exception)ev.getSource()).getMessage());
+            // setup streams
+            ArrayList<InputStream> streams = new ArrayList<>();
+            streams.add(process.getInputStream());
+            streams.add(process.getErrorStream());
+
+            RedirectStreams rs = new RedirectStreams(streams, ev -> {
+                TerminalPane.Write((String)ev.getSource());
             });
 
-            ProgramWriter writer = new ProgramWriter(process.getOutputStream(), (ArrayList<ActionListener>) TerminalPane.listeners);
+            addOutputListener(process.getOutputStream(), TerminalPane.listeners);
 
-            reader.start();
-            writer.start();
+            // run reader/writer routines
+            rs.run();
 
+            // wait for program to finish
             int returnCode = process.waitFor();
 
+            // clear off listeners
+            TerminalPane.listeners.clear();
+
+            // ending note with exit code
             TerminalPane.Write("Program finished with exit code " + returnCode);
         }
         catch (Exception ex) {
@@ -64,55 +65,55 @@ public class JavaCodeExecutionUnit extends Thread implements ICodeExecutionUnit 
         }
     }
 
-    private class ProgramReader extends Thread {
-        private InputStream is;
-        private ActionListener onRead;
-        private ActionListener onError;
-        private ActionEvent ev;
+    private void addOutputListener(OutputStream stream, List<ActionListener> listeners) {
+        listeners.add((l) -> {
+            byte[] data = l.getSource().toString().getBytes();
 
-        public ProgramReader(InputStream input, ActionListener onSuccess, ActionListener onErr) {
-            is = input;
-            onRead = onSuccess;
-            onError = onErr;
-            ev = new ActionEvent("", 0, "input");
-        }
-
-        @Override
-        public void run() {
             try {
-                byte[] buffer = new byte[1024];
-                while(true) {
-                    int read = is.read(buffer, 0, buffer.length);
-
-                    if (read == -1) break;
-
-                    if (read < buffer.length)
-                        buffer = Arrays.copyOf(buffer, read);
-
-                    ev.setSource(new String(buffer, StandardCharsets.UTF_8));
-                    onRead.actionPerformed(ev);
-                }
+                stream.write(data, 0, data.length);
+                stream.flush();
             }
-            catch (IOException e) {
-                ev.setSource(e);
-                onError.actionPerformed(ev);
+            catch (IOException ex) {
+                // swallow exception for now
             }
-        }
+        });
     }
 
-    private class ProgramWriter extends Thread {
-        private BufferedWriter writer;
+    private class RedirectStreams {
+        ActionListener writeTo;
+        ArrayList<InputStream> streams;
+        ActionEvent av;
 
-        public ProgramWriter(OutputStream out, ArrayList<ActionListener> listeners) {
-            writer = new BufferedWriter(new OutputStreamWriter(out));
-            listeners.add((ev) -> {
-                try {
-                    writer.write((String)ev.getSource());
-                    writer.flush();
-                }
-                catch (Exception e) {
-                    System.err.print(e.getMessage());
-                }
+        public RedirectStreams(ArrayList<InputStream> _streams, ActionListener _writeTo) {
+            if (_streams == null || _streams.isEmpty()) {
+                throw new IllegalArgumentException("empty or null streams not allowed");
+            }
+
+            streams = _streams;
+            writeTo = _writeTo;
+            av = new ActionEvent("", 0, "input");
+        }
+
+        public void run() {
+            streams.forEach(s -> {
+                Thread th = new Thread(() -> {
+                    int read;
+                    byte[] buffer = new byte[1024];
+
+                    try {
+                        while((read = s.read(buffer, 0, buffer.length)) != -1) {
+                            if (read < buffer.length) {
+                                buffer = Arrays.copyOf(buffer, read);
+                            }
+                            av.setSource(new String(buffer, StandardCharsets.UTF_8));
+                            writeTo.actionPerformed(av);
+                        }
+                    }
+                    catch (IOException e) {
+                        // swallow exception for now
+                    }
+                });
+                th.start();
             });
         }
     }
