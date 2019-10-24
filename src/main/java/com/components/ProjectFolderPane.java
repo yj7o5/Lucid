@@ -91,8 +91,12 @@ public class ProjectFolderPane {
     }
 
     public void newFile() throws IOException {
-        String fileName = JOptionPane.showInputDialog(mainFrame, "Enter new file; ");
-        File.createTempFile(fileName, "", currentDirectory);
+        String fileName = JOptionPane.showInputDialog("Enter new file: ");
+
+        File file = new File(currentDirectory.getPath() + File.separator + fileName);
+        if(!file.exists()){
+            file.createNewFile();
+        }
 
         renderTree(currentDirectory);
     }
