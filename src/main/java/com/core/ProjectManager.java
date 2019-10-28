@@ -67,8 +67,4 @@ public class ProjectManager implements IProjectManager {
 
         return chooser.getSelectedFile();
     }
-
-    public void saveProject() {
-
-    }
 }
