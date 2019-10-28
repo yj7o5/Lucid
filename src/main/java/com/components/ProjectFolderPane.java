@@ -102,8 +102,9 @@ public class ProjectFolderPane {
     }
 
     public void saveProject() {
-        // TODO: output to terminal -- create a live feed terminal listening for print commands
-        JOptionPane.showMessageDialog(mainFrame, "Project Saved!");
+        if(editorPane.saveChanges()) {
+            JOptionPane.showMessageDialog(mainFrame, "Project Saved!");
+        }
     }
 
     private void renderTree(File dir) {

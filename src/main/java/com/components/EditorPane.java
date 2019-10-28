@@ -53,6 +53,21 @@ public class EditorPane implements MouseListener {
         handleTabSwitch(e);
     }
 
+    public boolean saveChanges() {
+        boolean successful = false;
+        for (Editor editor:
+             editors) {
+            try {
+                editor.saveChanges();
+                successful = true;
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(tabContainers, "Failed saving project" );
+            }
+        }
+        return successful;
+    }
+
     private void handleTabClose(MouseEvent e) {
         int tabIndex = tabs.getUI().tabForCoordinate(tabs, e.getX(), e.getY());
         if (tabIndex < 0) return;
