@@ -8,6 +8,7 @@ import com.core.StatsFacade;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 
 public class Sandbox {
     // MAIN FRAME UI
@@ -47,6 +48,8 @@ public class Sandbox {
         headerMenuPane.init();
 
         statsFacade.setField(statsField);
+        fileButton.addMouseListener(new MouseAdapter() {
+        });
     }
 
     public static void main(String[] args) {
@@ -107,16 +110,18 @@ public class Sandbox {
         statsField.setEditable(false);
         editorContainer.add(statsField, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel2.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         mainPanel.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 50), null, new Dimension(-1, 50), 0, false));
         fileButton = new JButton();
         fileButton.setHorizontalAlignment(0);
         fileButton.setText("File");
         fileButton.setVerticalTextPosition(0);
-        panel2.add(fileButton, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(20, 10), null, 1, false));
+        panel2.add(fileButton);
         buildButton = new JButton();
+        buildButton.setHorizontalAlignment(0);
+        buildButton.setHorizontalTextPosition(0);
         buildButton.setText("Build");
-        panel2.add(buildButton, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(20, 10), null, 0, false));
+        panel2.add(buildButton);
     }
 
     /**
