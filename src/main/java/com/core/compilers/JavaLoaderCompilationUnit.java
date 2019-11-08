@@ -4,6 +4,9 @@ import com.components.TerminalPane;
 import java.io.*;
 import java.lang.reflect.Method;
 
+/*
+ Note: certain features such as compile, loadClass adapted from online ClassLoader pdf on shared drive
+ */
 public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompilationUnit {
     private File workingDirectory;
 
