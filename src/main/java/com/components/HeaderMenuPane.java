@@ -3,6 +3,7 @@ package com.components;
 import com.core.compilers.ICodeCompilationUnit;
 import com.core.compilers.JavaCodeExecutionUnit;
 import com.core.compilers.JavaCompilationUnit;
+import com.core.compilers.JavaLoaderCompilationUnit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -84,7 +85,7 @@ public class HeaderMenuPane {
     }
 
     private void buildProject() {
-        ICodeCompilationUnit cu = new JavaCompilationUnit(projectFolderPane.currentDirectory);
+        ICodeCompilationUnit cu = new JavaLoaderCompilationUnit(projectFolderPane.currentDirectory);
 
         TerminalPane.Clear();
         TerminalPane.Write(cu.compile().Output);

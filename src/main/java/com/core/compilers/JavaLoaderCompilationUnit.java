@@ -17,7 +17,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
 
         try {
             Class klass = this.loadClass(workingDirectory.getAbsolutePath());
-            Class mainArgType[] = new { (new String[0]).getClass()};
+            Class mainArgType[] = { (new String[0]).getClass() };
 
             Method main = klass.getMethod("main", mainArgType);
             main.invoke(null, new Object[0]);
