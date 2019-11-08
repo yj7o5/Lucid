@@ -8,6 +8,7 @@ import com.core.compilers.JavaCompilationUnit;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class HeaderMenuPane {
@@ -50,13 +51,19 @@ public class HeaderMenuPane {
         public final static String OPEN_PROJECT = "Open Project";
         public final static String CLOSE_PROJECT = "Close Project";
         public final static String NEW_PROJECT = "New Project";
+        public final static String NEW_FILE = "New File";
+        public final static String SAVE_FILE = "Save File";
+        public final static String SAVE_PROJECT = "Save Project";
 
         public JMenuItem[] getMenus() {
              return Arrays.stream(
                      new String[]{
+                             NEW_PROJECT,
                          OPEN_PROJECT,
+                         SAVE_PROJECT,
                          CLOSE_PROJECT,
-                         NEW_PROJECT
+                         NEW_FILE,
+                         SAVE_FILE
                      })
                      .map(menu -> {
                         JMenuItem mi = new JMenuItem(menu);
@@ -77,6 +84,24 @@ public class HeaderMenuPane {
                     return;
                 case NEW_PROJECT:
                     projectFolderPane.newProject();
+                    return;
+                case NEW_FILE:
+                    try {
+                        projectFolderPane.newFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                case SAVE_FILE:
+                    try {
+                        projectFolderPane.saveFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                case SAVE_PROJECT:
+                        projectFolderPane.saveProject();
+
                     return;
                 default:
                     jfilePopupMenu.show(fileButton, fileButton.getX(), fileButton.getY());
