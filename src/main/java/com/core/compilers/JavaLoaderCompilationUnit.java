@@ -5,7 +5,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 
 /*
- Note: certain features such as compile, loadClass adapted from online ClassLoader pdf on shared drive
+ Note: certain features such as compile, loadClas adapted from online ClassLoader pdf on shared drive
  */
 public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompilationUnit {
     private File workingDirectory;
@@ -19,7 +19,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         boolean passed = false;
 
         try {
-            Class klass = this.loadClass(workingDirectory.getAbsolutePath());
+            Class klass = this.loadClass(workingDirectory.getAbsolutePath() + "/Main");
             Class mainArgType[] = { (new String[0]).getClass() };
 
             Method main = klass.getMethod("main", mainArgType);
@@ -32,25 +32,25 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
     }
 
     private boolean compile(String javaFile) {
-        TerminalPane.Write("Compiling ...");
+        TerminalPane.Write("Compiling " + javaFile);
 
         // Start up the compiler
         Process p = null;
         try {
-            p = Runtime.getRuntime().exec("javac" + workingDirectory.getAbsolutePath());
+            String[] commands = new String[]{"javac", javaFile};
+            p = Runtime.getRuntime().exec(commands);
             p.waitFor();
         }
-        catch (InterruptedException ie) {
-            TerminalPane.Write("Failed compilation: " + ie.getMessage());
+        catch (Exception e) {
+            TerminalPane.Write("Failed compilation: " + e.getMessage());
         }
-        catch (Exception e) { }
 
         int ret = p.exitValue();
 
         return ret == 0;
     }
 
-    // Automatically compile source as necessary when looking class files
+    // automatically compile source as necessary when looking class files
     public Class loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
         Class klass = null;
@@ -58,7 +58,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         klass = findLoadedClass(name);
         TerminalPane.Write("Loading Class: " + name);
 
-        String fileStub = name.replace('.', '/');
+        String fileStub = name; //name.replace('.', '/');
 
         String javaFilename = fileStub+".java";
         String classFilename = fileStub+".class";
@@ -80,13 +80,15 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         try {
             byte raw[] = getBytes(classFilename);
 
-            klass = defineClass(name, raw, 0, raw.length);
+            klass = defineClass("Main", raw, 0, raw.length);
         } catch (IOException ie) {
-
+            System.err.println(ie);
         }
 
         if (klass == null) {
-            klass = findSystemClass(name);
+            String[] parts = classFilename.split("/");
+            classFilename = parts[parts.length - 1];
+            klass = findSystemClass(classFilename);
         }
 
         if (resolve && klass != null) {
@@ -109,7 +111,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
 
         byte[] raw = new byte[(int) len];
 
-        FileInputStream fs = new FileInputStream(workingDirectory);
+        FileInputStream fs = new FileInputStream(file);
 
         // Read all of it into the array
         int r = fs.read(raw);
@@ -119,6 +121,4 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         fs.close();
         return raw;
     }
-
-    // Spawn a process to compile the java source code file
 }

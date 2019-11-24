@@ -85,10 +85,11 @@ public class HeaderMenuPane {
     }
 
     private void buildProject() {
+        TerminalPane.Clear();
+
         ICodeCompilationUnit cu = new JavaLoaderCompilationUnit(projectFolderPane.currentDirectory);
 
-        TerminalPane.Clear();
-        TerminalPane.Write(cu.compile().Output);
+        cu.compile();
     }
 
     private void runProject() {
