@@ -28,6 +28,10 @@ public class TerminalPane {
         textArea = editor;
 
         textArea.setBackground(Color.lightGray);
+        textArea.setForeground(Color.black);
+
+        Font font = new Font("SANS_Serif", Font.PLAIN, 12);
+        textArea.setFont(font);
 
         textArea.setEditable(true);
         ((AbstractDocument)textArea.getDocument()).setDocumentFilter(new DocFilter());

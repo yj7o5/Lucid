@@ -35,6 +35,8 @@ public class EditorPane implements MouseListener {
         JScrollPane sp = new JScrollPane(editorPane);
 
         editorPane.setBackground(Color.lightGray);
+        Font font = new Font("SANS_Serif", Font.PLAIN, 12);
+        editorPane.setFont(font);
 
         panel.add(sp, BorderLayout.CENTER);
 
