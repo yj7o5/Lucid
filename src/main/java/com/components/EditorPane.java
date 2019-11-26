@@ -34,11 +34,16 @@ public class EditorPane implements MouseListener {
         JTextPane editorPane = new JTextPane();
         JScrollPane sp = new JScrollPane(editorPane);
 
+        editorPane.setBackground(Color.lightGray);
+
         panel.add(sp, BorderLayout.CENTER);
 
         tabs.addTab(name, new CloseTabIcon(null), panel);
 
         Editor editor = new Editor(file, editorPane);
+
+        //editorPane.setBackground(Color.lightGray);
+
         editors.add(editor);
     }
 

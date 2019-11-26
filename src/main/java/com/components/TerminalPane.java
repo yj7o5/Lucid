@@ -2,6 +2,7 @@ package com.components;
 
 import javax.swing.*;
 import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ public class TerminalPane {
 
     public TerminalPane(JTextArea editor) {
         textArea = editor;
+
+        textArea.setBackground(Color.lightGray);
 
         textArea.setEditable(true);
         ((AbstractDocument)textArea.getDocument()).setDocumentFilter(new DocFilter());
