@@ -34,13 +34,14 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
     private boolean compile(String javaFile) {
         TerminalPane.WriteLn("Compiling: " + javaFile);
 
-        // Start up the compiler
         Process p = null;
         try {
-            String pathToLib = workingDirectory.getAbsolutePath() + "/libs";
-            String[] commands = new String[]{"javac", "--release", "11", /*"-cp", pathToLib + "/*",*/ javaFile};
+            String pathToLib = workingDirectory.getAbsolutePath() + "/libs/*";
+            String[] commands = new String[]{"javac", "--release", "11", /*"-cp", pathToLib, */ javaFile};
+
             ProcessBuilder pb = new ProcessBuilder();
             pb.directory(workingDirectory);
+
             p = pb.command(commands).start();
             p.waitFor();
         }
