@@ -5,7 +5,9 @@
     <constraints>
       <xy x="20" y="13" width="77100" height="586"/>
     </constraints>
-    <properties/>
+    <properties>
+      <font name="Noto Sans Mono CJK TC Bold"/>
+    </properties>
     <border type="none"/>
     <children>
       <grid id="19445" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -24,6 +26,7 @@
             </constraints>
             <properties>
               <background color="-3949910"/>
+              <font name="Noto Sans Mono CJK JP Bold"/>
               <foreground color="-1319733"/>
             </properties>
           </component>
