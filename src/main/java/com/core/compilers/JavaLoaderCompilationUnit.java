@@ -3,6 +3,8 @@ import com.components.TerminalPane;
 import com.utilities.Helper;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /*
  Note: certain features such as compile, loadClass adapted from online ClassLoader pdf on shared drive
@@ -36,8 +38,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
 
         Process p = null;
         try {
-            String pathToLib = workingDirectory.getAbsolutePath() + "/libs/*";
-            String[] commands = new String[]{"javac", "--release", "11", /*"-cp", pathToLib, */ javaFile};
+            String[] commands = new String[]{"javac", "--release", "11", "-cp", "\"" + getDependecies() + "\"", javaFile};
 
             ProcessBuilder pb = new ProcessBuilder();
             pb.directory(workingDirectory);
@@ -133,5 +134,20 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         }
         fs.close();
         return raw;
+    }
+
+    private String getDependecies() {
+        // Windows ';' separator
+        // Unix ':' separator
+        boolean isWin = "windows".equals(System.getProperty("os.name").toLowerCase());
+        String delimeter = isWin ? ";" : ":";
+        String pathToLibs = workingDirectory.getAbsolutePath() + "/libs";
+
+        String jarFiles = Arrays.stream(new File(pathToLibs).listFiles(f -> f.getName().endsWith(".jar")))
+                .map(f -> f.getName())
+                .collect(Collectors.joining(delimeter));
+        jarFiles = "." + (isWin ? ";" : ":") + jarFiles;
+
+        return jarFiles;
     }
 }
