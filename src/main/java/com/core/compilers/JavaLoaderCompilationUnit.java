@@ -1,8 +1,8 @@
 package com.core.compilers;
 import com.components.TerminalPane;
+import com.utilities.Helper;
 
 import java.io.*;
-import java.lang.reflect.Method;
 
 /*
  Note: certain features such as compile, loadClas adapted from online ClassLoader pdf on shared drive
@@ -16,38 +16,47 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
 
     @Override
     public CompilationResult compile() {
-        boolean passed = false;
-
         try {
-            Class klass = this.loadClass(workingDirectory.getAbsolutePath() + "/Main");
-            Class mainArgType[] = { (new String[0]).getClass() };
+            this.loadClass("Main");
+        } catch (Exception e) {
+            TerminalPane.WriteLn("Build Failure: " + e.getMessage());
+            return new CompilationResult("Failed", false);
+        }
 
-            Method main = klass.getMethod("main", mainArgType);
-            main.invoke(null, new Object[0]);
+        TerminalPane.WriteLn("Build Successful");
+        return new CompilationResult("Success", true);
+    }
 
-            passed = true;
-        } catch (Exception e) { }
-
-        return new CompilationResult("Success", passed);
+    private boolean compile(File file) {
+        return compile(file.getAbsolutePath());
     }
 
     private boolean compile(String javaFile) {
-        TerminalPane.Write("Compiling " + javaFile);
+        TerminalPane.WriteLn("Compiling: " + javaFile);
 
         // Start up the compiler
         Process p = null;
         try {
-            String[] commands = new String[]{"javac", javaFile};
+            String[] commands = new String[]{"javac", "--release", "11", javaFile};
             p = Runtime.getRuntime().exec(commands);
             p.waitFor();
         }
         catch (Exception e) {
-            TerminalPane.Write("Failed compilation: " + e.getMessage());
+            TerminalPane.WriteLn("Failed Compiling: " + javaFile + "\n" + "Error: " + e.getMessage());
+            return false;
         }
 
-        int ret = p.exitValue();
+        boolean exit = p.exitValue() == 0;
 
-        return ret == 0;
+        if (exit) {
+            TerminalPane.WriteLn("Compiled: " + javaFile);
+        }
+        else {
+            String output = Helper.readProcessOutput(p.getErrorStream());
+            TerminalPane.WriteLn(output);
+        }
+
+        return exit;
     }
 
     // automatically compile source as necessary when looking class files
@@ -56,21 +65,22 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         Class klass = null;
 
         klass = findLoadedClass(name);
-        TerminalPane.Write("Loading Class: " + name);
+        TerminalPane.WriteLn("Loading Class: " + name);
 
-        String fileStub = name; //name.replace('.', '/');
+        String fileStub = name.replace('.', '/');
 
         String javaFilename = fileStub+".java";
         String classFilename = fileStub+".class";
 
-        File javaFile = new File(javaFilename);
-        File classFile = new File(classFilename);
+        String rootPath = workingDirectory.getAbsolutePath();
+        File javaFile = new File(rootPath + "/" + javaFilename);
+        File classFile = new File(rootPath + "/" + classFilename);
 
         if (javaFile.exists() &&
                 (!classFile.exists() || javaFile.lastModified() > classFile.lastModified())) {
             try {
-                if (!compile(javaFilename) || !classFile.exists()) {
-                    throw new ClassNotFoundException("Compile Failed: " + javaFilename);
+                if (!compile(javaFile) || !classFile.exists()) {
+                    throw new ClassNotFoundException(javaFilename);
                 }
             } catch (Exception e) {
                 throw new ClassNotFoundException(e.toString());
@@ -78,17 +88,16 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         }
 
         try {
-            byte raw[] = getBytes(classFilename);
+            byte raw[] = getBytes(classFile.getAbsolutePath());
 
-            klass = defineClass("Main", raw, 0, raw.length);
+            klass = defineClass(name, raw, 0, raw.length);
         } catch (IOException ie) {
-            System.err.println(ie);
+
         }
 
+        // Maybe the class is in standard system library
         if (klass == null) {
-            String[] parts = classFilename.split("/");
-            classFilename = parts[parts.length - 1];
-            klass = findSystemClass(classFilename);
+            klass = findSystemClass(name);
         }
 
         if (resolve && klass != null) {

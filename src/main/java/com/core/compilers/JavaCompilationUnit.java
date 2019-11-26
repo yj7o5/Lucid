@@ -1,5 +1,7 @@
 package com.core.compilers;
 
+import com.utilities.Helper;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -37,7 +39,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
 
             // anything other than 0 means error of some kind
             if (p.getErrorStream().read() != -1) {
-                executionResult.append(readProcessOutput(p.getErrorStream()));
+                executionResult.append(Helper.readProcessOutput(p.getErrorStream()));
 
                 return new CompilationResult(executionResult.toString(), false);
             }
@@ -52,24 +54,6 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
 
         return new CompilationResult("No output", true);
     }
-
-        private String readProcessOutput(InputStream stream) {
-            StringBuilder output = new StringBuilder();
-            byte[] buffer = new byte[1024];
-
-            try {
-                int lastRead;
-                while ((lastRead = stream.read(buffer, 0, buffer.length)) > 0) {
-                    if (lastRead < buffer.length)
-                        buffer = Arrays.copyOfRange(buffer, 0, lastRead);
-                    output.append(new String(buffer, StandardCharsets.UTF_8));
-                }
-            } catch (IOException e) {
-                System.err.println(String.format("Error reading compilation output: %s\nTrace: %s", e.getMessage(), e.getStackTrace()));
-            }
-
-            return output.toString();
-        }
 
     // Ex: javac -cp "dep1.jar;dep2.jar;dep3.jar" source
     private String getCodeCompilationCommand(File root) {

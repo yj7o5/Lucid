@@ -17,6 +17,8 @@ public class TerminalPane {
         textArea.append(text);
     }
 
+    public static void WriteLn(String text) { Write(text + "\n");}
+
     public static void Clear() {
         textArea.setText("");
     }
