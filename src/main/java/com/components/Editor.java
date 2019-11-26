@@ -100,6 +100,7 @@ public class Editor {
             if (matcher.group(group) != null) {
                 highlight(style, matcher.start(group), matcher.end(group) - matcher.start(group), false);
             }
+            
         }
 
         public EditorStyleConsumer() {

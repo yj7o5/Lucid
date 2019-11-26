@@ -145,7 +145,7 @@ public class ProjectFolderPane {
                 .orElse(null);
     }
 
-    private void saveFile() throws IOException {
+    public void saveFile() throws IOException {
         Editor editor = editorPane.getActiveEditor();
 
         editor.saveChanges();

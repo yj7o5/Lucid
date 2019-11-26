@@ -30,6 +30,14 @@
             <artifactId>rxjava</artifactId>
             <version>2.2.12</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.jtattoo/JTattoo -->
+        <dependency>
+            <groupId>com.jtattoo</groupId>
+            <artifactId>JTattoo</artifactId>
+            <version>1.6.12</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
