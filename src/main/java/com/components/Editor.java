@@ -100,7 +100,6 @@ public class Editor {
             if (matcher.group(group) != null) {
                 highlight(style, matcher.start(group), matcher.end(group) - matcher.start(group), false);
             }
-            
         }
 
         public EditorStyleConsumer() {
@@ -117,6 +116,7 @@ public class Editor {
             keywordColorMap.put(Keywords.Default, Color.BLACK);
 
             reset();
+            accept(null);
         }
 
         private void reset() {

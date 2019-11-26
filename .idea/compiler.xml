@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8">
-      <module name="Lucid" target="11" />
+      <module name="Lucid" target="9" />
     </bytecodeTargetLevel>
   </component>
 </project>
