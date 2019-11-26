@@ -53,6 +53,26 @@ public class Sandbox {
     }
 
     public static void main(String[] args) {
+
+
+        try {
+            // Set System L&F
+            UIManager.setLookAndFeel(
+                    "com.jtattoo.plaf.hifi.HiFiLookAndFeel");
+        }
+        catch (UnsupportedLookAndFeelException e) {
+            // handle exception
+        }
+        catch (ClassNotFoundException e) {
+            // handle exception
+        }
+        catch (InstantiationException e) {
+            // handle exception
+        }
+        catch (IllegalAccessException e) {
+            // handle exception
+        }
+
         initFrame("Lucid");
     }
 
@@ -62,6 +82,8 @@ public class Sandbox {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+
+
     }
 
     private void SetupProjectPane() {
@@ -85,11 +107,15 @@ public class Sandbox {
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
         mainPanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        Font mainPanelFont = this.$$$getFont$$$("Noto Sans Mono CJK TC Bold", -1, -1, mainPanel.getFont());
+        if (mainPanelFont != null) mainPanel.setFont(mainPanelFont);
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         projectPane = new JTree();
         projectPane.setBackground(new Color(-3949910));
+        Font projectPaneFont = this.$$$getFont$$$("Noto Sans Mono CJK JP Bold", -1, -1, projectPane.getFont());
+        if (projectPaneFont != null) projectPane.setFont(projectPaneFont);
         projectPane.setForeground(new Color(-1319733));
         panel1.add(projectPane, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 50), null, 2, false));
         editorContainer = new JPanel();
@@ -122,6 +148,25 @@ public class Sandbox {
         buildButton.setHorizontalTextPosition(0);
         buildButton.setText("Build");
         panel2.add(buildButton);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {
+            resultName = currentFont.getName();
+        } else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
+                resultName = fontName;
+            } else {
+                resultName = currentFont.getName();
+            }
+        }
+        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
     /**
