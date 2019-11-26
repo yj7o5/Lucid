@@ -26,7 +26,8 @@ public class JavaCodeExecutionUnit extends Thread implements ICodeExecutionUnit 
     @Override
     public void run()
     {
-        pb = new ProcessBuilder(new String[]{"java", "-cp", targetDirectory.getAbsolutePath(), "Main"});
+        pb = new ProcessBuilder(new String[]{"java", "-cp", "libs/*:", "Main"});
+        pb.directory(targetDirectory);
         pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
         execute();
     }

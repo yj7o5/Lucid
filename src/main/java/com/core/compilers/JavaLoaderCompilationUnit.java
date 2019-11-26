@@ -5,7 +5,7 @@ import com.utilities.Helper;
 import java.io.*;
 
 /*
- Note: certain features such as compile, loadClas adapted from online ClassLoader pdf on shared drive
+ Note: certain features such as compile, loadClass adapted from online ClassLoader pdf on shared drive
  */
 public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompilationUnit {
     private File workingDirectory;
@@ -37,8 +37,11 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         // Start up the compiler
         Process p = null;
         try {
-            String[] commands = new String[]{"javac", "--release", "11", javaFile};
-            p = Runtime.getRuntime().exec(commands);
+            String pathToLib = workingDirectory.getAbsolutePath() + "/libs";
+            String[] commands = new String[]{"javac", "--release", "11", /*"-cp", pathToLib + "/*",*/ javaFile};
+            ProcessBuilder pb = new ProcessBuilder();
+            pb.directory(workingDirectory);
+            p = pb.command(commands).start();
             p.waitFor();
         }
         catch (Exception e) {

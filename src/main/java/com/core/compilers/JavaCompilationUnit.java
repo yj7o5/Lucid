@@ -5,6 +5,7 @@ import com.utilities.Helper;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class JavaCompilationUnit implements ICodeCompilationUnit {
     private File workingDirectory;
@@ -19,7 +20,7 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
             throw new IllegalArgumentException(String.format("Invalid project directory provided for compilation: %s", JavaCompilationUnit.class.getName()));
         }
 
-        String command = getCodeCompilationCommand(workingDirectory);
+        String command = getCodeExecutionCommand();
 
         return executeCommand(command);
     }
@@ -56,17 +57,12 @@ public class JavaCompilationUnit implements ICodeCompilationUnit {
     }
 
     // Ex: javac -cp "dep1.jar;dep2.jar;dep3.jar" source
-    private String getCodeCompilationCommand(File root) {
-        StringBuilder builder = new StringBuilder("javac");
-
-        String[] dependencies = getDependencies(root);
-        // String[] files = getJavaFiles(root);
-
-        // define classpath parameter
-        builder.append(" -cp ");
-        builder.append(". Main.java");
-
-        return builder.toString();
+    private String getCodeExecutionCommand() {
+        return Arrays.stream(new String[]{
+            "-cp",
+            "libs/*:",
+            "Main"
+        }).collect(Collectors.joining(" "));
     }
 
     private String[] getJavaFiles(File root) {
