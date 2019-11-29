@@ -183,6 +183,7 @@ public class ProjectFolderPane {
     public void deleteFile() throws IOException {
         String filename = projectFolderComponent.getLastSelectedPathComponent().toString();
         projectManager.deleteFile(currentDirectory, filename);
+        renderTree(currentDirectory);
     }
 
     private class MenuClickHandler implements ActionListener {
