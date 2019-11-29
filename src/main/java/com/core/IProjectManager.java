@@ -9,4 +9,5 @@ public interface IProjectManager {
     void removeProject(String locationDir) throws IOException;
     File openProject(Component frame);
     void deleteFile(File directory, String name) throws IOException;
+    void renameFile(File directory, String name, String renameTo) throws IOException;
 }

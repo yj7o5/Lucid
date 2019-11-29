@@ -71,9 +71,20 @@ public class ProjectManager implements IProjectManager {
     public void deleteFile(File directory, String fileName) throws IOException {
         // also cleanup corresponding class file for this java file
         if (fileName.endsWith(".java")) {
-            Files.delete(Path.of(directory.getAbsolutePath(), fileName.replace("java", "class")));
+            Path path = Path.of(directory.getAbsolutePath(), fileName.replace("java", "class"));
+
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
         }
 
         Files.delete(Path.of(directory.getAbsolutePath(), fileName));
+    }
+
+    public void renameFile(File directory, String fileName, String renameTo) throws IOException {
+        File fromName = new File(directory.getAbsolutePath() + "/" + fileName);
+        File toName = new File(directory.getAbsolutePath() + "/" + renameTo);
+
+        fromName.renameTo(toName);
     }
 }

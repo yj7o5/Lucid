@@ -182,7 +182,18 @@ public class ProjectFolderPane {
 
     public void deleteFile() throws IOException {
         String filename = projectFolderComponent.getLastSelectedPathComponent().toString();
+        editorPane.closeEditor(filename);
         projectManager.deleteFile(currentDirectory, filename);
+        renderTree(currentDirectory);
+    }
+
+    public void renameFile() throws IOException {
+        String filename = projectFolderComponent.getLastSelectedPathComponent().toString();
+        String renameFile = JOptionPane.showInputDialog(mainFrame, "Rename to file: ");
+
+        if (renameFile == null) return;
+
+        projectManager.renameFile(currentDirectory, filename, renameFile);
         renderTree(currentDirectory);
     }
 
@@ -246,12 +257,18 @@ public class ProjectFolderPane {
                         return;
                     case DELETE_FILE:
                         deleteFile();
+                        return;
+                    case RENAME_FILE:
+                        renameFile();
+                        return;
 
                     default:
                         return;
                 }
             }
-            catch(IOException e) {}
+            catch(IOException e) {
+                System.err.println(e);
+            }
         }
     }
 
@@ -260,7 +277,6 @@ public class ProjectFolderPane {
         public final static String RENAME_FILE = "Rename File";
 
         public JMenuItem[] getMenus(ActionListener listener) {
-            ProjectPaneClickHandler parent = this;
             return Arrays.stream(
                     new String[]{
                         DELETE_FILE,
@@ -294,7 +310,7 @@ public class ProjectFolderPane {
                 else if (pathCheck.isLibFile()) {
                     activeMenu = libFileMenuComponent;
                 }
-                else if (row > 0) {
+                else if (row == 0) {
                     activeMenu = projectFolderMenuComponent;
                 }
 
