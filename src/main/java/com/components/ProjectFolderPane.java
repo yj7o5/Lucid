@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.utilities.Guard;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -148,7 +149,7 @@ public class ProjectFolderPane {
                         });
                 root.add(libRoot);
             }
-            else {
+            else if (!f.isDirectory() && f.getName().endsWith(".java")) {
                 root.add(new DefaultMutableTreeNode(f.getName()));
             }
         }
@@ -194,6 +195,33 @@ public class ProjectFolderPane {
         if (renameFile == null) return;
 
         projectManager.renameFile(currentDirectory, filename, renameFile);
+        renderTree(currentDirectory);
+    }
+
+    public void importJar() {
+        JFileChooser chooser = new JFileChooser("f:");
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.addChoosableFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.getName().endsWith(".jar") || file.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return "*.jar";
+            }
+        });
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        if (chooser.showOpenDialog(mainFrame) != JFileChooser.APPROVE_OPTION) return;
+
+        File location = chooser.getSelectedFile();
+        File newLocation = new File(currentDirectory + "/libs/" + location.getName());
+        if (location.compareTo(newLocation) != 0) {
+            location.renameTo(newLocation);
+        }
+
         renderTree(currentDirectory);
     }
 
@@ -260,6 +288,9 @@ public class ProjectFolderPane {
                         return;
                     case RENAME_FILE:
                         renameFile();
+                        return;
+                    case IMPORT_JAR:
+                        importJar();
                         return;
 
                     default:
