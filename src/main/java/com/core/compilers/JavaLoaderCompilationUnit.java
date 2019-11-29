@@ -38,7 +38,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
 
         Process p = null;
         try {
-            String[] commands = new String[]{"javac", "--release", "11", "-cp", "\"" + getDependecies() + "\"", javaFile};
+            String[] commands = new String[]{"javac", "--release", "11", "-cp", getDependecies(), javaFile};
 
             ProcessBuilder pb = new ProcessBuilder();
             pb.directory(workingDirectory);
@@ -144,7 +144,7 @@ public class JavaLoaderCompilationUnit extends ClassLoader implements ICodeCompi
         String pathToLibs = workingDirectory.getAbsolutePath() + "/libs";
 
         String jarFiles = Arrays.stream(new File(pathToLibs).listFiles(f -> f.getName().endsWith(".jar")))
-                .map(f -> f.getName())
+                .map(f -> pathToLibs + "/" + f.getName())
                 .collect(Collectors.joining(delimeter));
         jarFiles = "." + (isWin ? ";" : ":") + jarFiles;
 

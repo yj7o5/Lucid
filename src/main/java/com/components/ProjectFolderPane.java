@@ -2,6 +2,7 @@ package com.components;
 
 import com.core.IProjectManager;
 import com.core.ProjectManager;
+import com.sun.source.tree.Tree;
 import com.utilities.Guard;
 
 import javax.swing.*;
@@ -16,6 +17,10 @@ import java.util.Arrays;
 public class ProjectFolderPane {
     private JTree projectFolderComponent;
     private JPopupMenu projectFolderMenuComponent;
+    private JPopupMenu fileMenuComponent;
+    private JPopupMenu libMenuComponent;
+    private JPopupMenu libFileMenuComponent;
+
     private JPopupMenu projectFileMenuComponent;
 
     private MenuClickHandler menuHandler;
@@ -35,6 +40,9 @@ public class ProjectFolderPane {
 
         projectFolderMenuComponent = new JPopupMenu();
         projectFileMenuComponent = new JPopupMenu();
+        fileMenuComponent = new JPopupMenu();
+        libMenuComponent = new JPopupMenu();
+        libFileMenuComponent = new JPopupMenu();
 
         menuHandler = new MenuClickHandler();
         projectPaneHanlder = new ProjectPaneClickHandler();
@@ -53,8 +61,19 @@ public class ProjectFolderPane {
 
         // Project file options: deleting, renaming
         for(JMenuItem menu : projectPaneHanlder.getMenus(menuHandler)) {
-            menu.addActionListener(menuHandler);
             projectFileMenuComponent.add(menu);
+        }
+
+        for(JMenuItem menu : menuHandler.getFileMenus()) {
+            fileMenuComponent.add(menu);
+        }
+
+        for(JMenuItem menu : menuHandler.getLibMenus()) {
+            libMenuComponent.add(menu);
+        }
+
+        for(JMenuItem menu : menuHandler.getLibFileMenus()) {
+            libFileMenuComponent.add(menu);
         }
     }
 
@@ -121,7 +140,17 @@ public class ProjectFolderPane {
         for(File f : dir.listFiles()) {
             if (f.isHidden()) continue;
             if (f.getName().endsWith(".class")) continue;
-            root.add(new DefaultMutableTreeNode(f.getName()));
+            if (f.isDirectory() && "libs".equals(f.getName().toLowerCase())) {
+                DefaultMutableTreeNode libRoot = new DefaultMutableTreeNode(f.getName());
+                Arrays.stream(f.listFiles(next -> next.getName().endsWith(".jar")))
+                        .forEach(law -> {
+                            libRoot.add(new DefaultMutableTreeNode(law.getName()));
+                        });
+                root.add(libRoot);
+            }
+            else {
+                root.add(new DefaultMutableTreeNode(f.getName()));
+            }
         }
 
         projectFolderComponent.setModel(model);
@@ -151,6 +180,11 @@ public class ProjectFolderPane {
         editor.saveChanges();
     }
 
+    public void deleteFile() throws IOException {
+        String filename = projectFolderComponent.getLastSelectedPathComponent().toString();
+        projectManager.deleteFile(currentDirectory, filename);
+    }
+
     private class MenuClickHandler implements ActionListener {
         public final static String NEW_FILE = "New File";
         public final static String NEW_PROJECT = "New Project";
@@ -158,21 +192,39 @@ public class ProjectFolderPane {
         public final static String SAVE_PROJECT = "Save Project";
         public final static String SAVE_FILE = "Save File";
 
-        public JMenuItem[] getMenus() {
-            return Arrays.stream(
-                    new String[]{
-                            NEW_FILE,
-                            NEW_PROJECT,
-                            CLOSE_PROJECT,
-                            SAVE_PROJECT,
-                            SAVE_FILE
-                    })
-                    .map(menu -> {
-                        JMenuItem mi = new JMenuItem(menu);
-                        mi.addActionListener(this);
+        public final static String RENAME_FILE = "Rename File";
+        public final static String DELETE_FILE = "Delete File";
 
-                        return mi;
-                    }).toArray(JMenuItem[]::new);
+        public final static String IMPORT_JAR = "Import Jar";
+        public final static String DELETE_ALL_JAR = "Delete All Jar";
+
+        public JMenuItem[] getMenus() {
+            return getMenus(new String[]{ NEW_FILE, NEW_PROJECT, CLOSE_PROJECT, SAVE_PROJECT, SAVE_FILE });
+        }
+
+        public JMenuItem[] getFileMenus() {
+            return getMenus(new String[] { RENAME_FILE, DELETE_FILE });
+        }
+
+        public JMenuItem[] getLibMenus() {
+            return getMenus(new String[] { IMPORT_JAR, DELETE_ALL_JAR });
+        }
+
+        public JMenuItem[] getLibFileMenus() {
+            return getMenus(new String[] { DELETE_FILE });
+        }
+
+        private JMenuItem[] getMenus(String[] menus) {
+            return Arrays.stream(menus)
+                    .map(this::addMenuListener)
+                    .toArray(JMenuItem[]::new);
+        }
+
+        private JMenuItem addMenuListener(String menu) {
+            JMenuItem mi = new JMenuItem(menu);
+            mi.addActionListener(this);
+
+            return mi;
         }
 
         @Override
@@ -191,6 +243,8 @@ public class ProjectFolderPane {
                     case SAVE_FILE:
                         saveFile();
                         return;
+                    case DELETE_FILE:
+                        deleteFile();
 
                     default:
                         return;
@@ -208,8 +262,8 @@ public class ProjectFolderPane {
             ProjectPaneClickHandler parent = this;
             return Arrays.stream(
                     new String[]{
-                            DELETE_FILE,
-                            RENAME_FILE
+                        DELETE_FILE,
+                        RENAME_FILE
                     })
                     .map(menu -> {
                         JMenuItem mi = new JMenuItem(menu);
@@ -228,14 +282,27 @@ public class ProjectFolderPane {
 
             if (SwingUtilities.isRightMouseButton(e))
             {
-                if (row == 0) projectFolderMenuComponent.show(e.getComponent(), x, y);
-                // else projectFileMenuComponent.show(e.getComponent(), x, y);
+                TreePath path = projectFolderComponent.getPathForRow(row);
+                PathFileCheck pathCheck = new PathFileCheck(path);
+                JPopupMenu activeMenu = null;
+
+                if (pathCheck.isCodeFile())
+                    activeMenu = fileMenuComponent;
+                else if (pathCheck.isLibFolder())
+                    activeMenu = libMenuComponent;
+                else if (pathCheck.isLibFile()) {
+                    activeMenu = libFileMenuComponent;
+                }
+                else if (row > 0) {
+                    activeMenu = projectFolderMenuComponent;
+                }
+
+                if (activeMenu != null) activeMenu.show(e.getComponent(), x, y);
             }
             // check if double clicked
             else if (e.getClickCount() == 2) {
                 TreePath tp = projectFolderComponent.getClosestPathForLocation(x, y);
                 String name = tp.getLastPathComponent().toString();
-
                 File file = getFile(name);
 
                 try {
@@ -244,6 +311,24 @@ public class ProjectFolderPane {
                 catch (IOException ex) {
                     JOptionPane.showMessageDialog(mainFrame, ex.getMessage());
                 }
+            }
+        }
+
+        class PathFileCheck {
+            TreePath p;
+            public PathFileCheck(TreePath path) { p = path; }
+            private String getLastPartOf(TreePath path) {
+                return path.getPath()[path.getPathCount() - 1].toString().toLowerCase();
+            }
+            public boolean isLibFile() {
+                return getLastPartOf(p).endsWith(".jar") &&
+                        getLastPartOf(p.getParentPath()).equals("libs");
+            }
+            public boolean isCodeFile() {
+                return getLastPartOf(p).endsWith(".java");
+            }
+            public boolean isLibFolder() {
+                return getLastPartOf(p).equals("libs");
             }
         }
     }
