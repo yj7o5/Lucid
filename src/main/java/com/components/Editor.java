@@ -47,7 +47,7 @@ public class Editor {
 
         prestine$
             .distinctUntilChanged()
-            .doOnEach(isPrestine -> System.out.println("File changed")).subscribe();
+            .subscribe();
     }
 
     public String getFileName() {
