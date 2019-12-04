@@ -23,7 +23,7 @@ public class StatsFacade {
         textField.setText(stats);
     }
 
-    // such a bad code, this is terrible performance ... I am sorry :( -- will optimize
+    // such bad code, this is terrible performance ... I am sorry :( -- will optimize
     public int getNumberOfLines(String code) {
         return code.split("\n").length;
     }

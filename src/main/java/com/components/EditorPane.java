@@ -3,6 +3,7 @@ package com.components;
 import com.external.CloseTabIcon;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -94,7 +95,12 @@ public class EditorPane implements MouseListener {
 
     private void removeEditorAtIndex(int tabIndex) {
         String fileName = tabs.getTitleAt(tabIndex);
-        editors.removeIf(f -> f.getFileName().equalsIgnoreCase(fileName));
+        editors.removeIf(f -> {
+            boolean remove = f.getFileName().equalsIgnoreCase(fileName);
+            if (remove) f.dispose();
+
+            return remove;
+        });
 
         tabs.removeTabAt(tabIndex);
     }

@@ -10,7 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 
-public class Sandbox {
+public class Lucid {
     // MAIN FRAME UI
     private JPanel mainPanel;
 
@@ -38,7 +38,7 @@ public class Sandbox {
     // MISC
     public final static StatsFacade statsFacade = new StatsFacade();
 
-    public Sandbox() {
+    public Lucid() {
         editorPane = new EditorPane(editorContainer, tabPane);
         projectFolderPane = new ProjectFolderPane(projectPane, mainPanel, editorPane);
         headerMenuPane = new HeaderMenuPane(fileButton, buildButton, projectFolderPane);
@@ -53,41 +53,29 @@ public class Sandbox {
     }
 
     public static void main(String[] args) {
-
-
         try {
             // Set System L&F
             UIManager.setLookAndFeel(
                     "com.jtattoo.plaf.hifi.HiFiLookAndFeel");
-        }
-        catch (UnsupportedLookAndFeelException e) {
+        } catch (UnsupportedLookAndFeelException e) {
             // handle exception
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             // handle exception
-        }
-        catch (InstantiationException e) {
+        } catch (InstantiationException e) {
             // handle exception
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             // handle exception
         }
 
-        initFrame("Lucid");
+        initFrame("Editor Made Simple");
     }
 
     private static void initFrame(String title) {
         JFrame frame = new JFrame(title);
-        frame.setContentPane(new Sandbox().mainPanel);
+        frame.setContentPane(new Lucid().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-
-
-    }
-
-    private void SetupProjectPane() {
-        projectPane.setModel(null);
     }
 
     {

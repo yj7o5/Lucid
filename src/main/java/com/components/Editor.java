@@ -1,6 +1,7 @@
 package com.components;
 
-import com.Sandbox;
+import com.Lucid;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
@@ -23,10 +24,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Editor {
+public class Editor implements Disposable {
     private JTextPane editorPane;
     private String fileName;
     private File file;
+    private Disposable fileChangesSubscription;
+    private EditorDocumentListener edl;
+    private boolean isDisposed = false;
 
     // Indicates tells whether modifications to current document hasn't been saved yet
     private BehaviorSubject<Boolean> prestine$ = BehaviorSubject.create();
@@ -41,17 +45,42 @@ public class Editor {
         String fileContent = Files.readAllLines(Paths.get(selectedFile.getAbsolutePath())).stream().collect(Collectors.joining("\n"));
         editorPane.setText(fileContent);
 
-        Sandbox.statsFacade.updateStats(fileContent);
+        Lucid.statsFacade.updateStats(fileContent);
 
-        editorPane.getDocument().addDocumentListener(new EditorDocumentListener());
+        edl = new EditorDocumentListener();
+        editorPane.getDocument().addDocumentListener(edl);
 
-        prestine$
+        fileChangesSubscription = prestine$
             .distinctUntilChanged()
             .subscribe();
+
+        setTabs(4);
     }
 
     public String getFileName() {
         return fileName;
+    }
+
+    // adapted from: https://stackoverflow.com/questions/33544621/java-setting-indent-size-on-jtextpane/33557782#33557782
+    public void setTabs(int charactersPerTab)
+    {
+        FontMetrics fm = editorPane.getFontMetrics( editorPane.getFont() );
+        int charWidth = fm.charWidth( ' ' );
+        int tabWidth = charWidth * charactersPerTab;
+
+        TabStop[] tabs = new TabStop[5];
+
+        for (int j = 0; j < tabs.length; j++)
+        {
+            int tab = j + 1;
+            tabs[j] = new TabStop( tab * tabWidth );
+        }
+
+        TabSet tabSet = new TabSet(tabs);
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setTabSet(attributes, tabSet);
+        int length = editorPane.getDocument().getLength();
+        editorPane.getStyledDocument().setParagraphAttributes(0, length, attributes, false);
     }
 
     public void saveChanges() throws IOException  {
@@ -65,15 +94,38 @@ public class Editor {
         Files.write(path, bytes);
     }
 
+    @Override
+    public void dispose() {
+        if (!isDisposed())
+        {
+            fileChangesSubscription.dispose();
+            edl.unsubscribeSubject();
+        }
+        isDisposed = true;
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return isDisposed;
+    }
+
     private class EditorDocumentListener implements DocumentListener {
         final PublishSubject<DocumentEvent> documentEventSubject = PublishSubject.create();
 
+        Disposable subscription;
+
         public EditorDocumentListener() {
-            documentEventSubject
+            subscription = documentEventSubject
                     .debounce(250,  TimeUnit.MILLISECONDS)
                     .doOnEach(c -> prestine$.onNext(true))
                     .subscribeOn(Schedulers.io())
                     .subscribe(new EditorStyleConsumer());
+        }
+
+        public void unsubscribeSubject() {
+            if (subscription != null && !subscription.isDisposed()) {
+                subscription.dispose();
+            }
         }
 
         @Override
@@ -149,12 +201,7 @@ public class Editor {
         }
 
         private void updateStats(String code) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Sandbox.statsFacade.updateStats(code);
-                }
-            });
+            SwingUtilities.invokeLater(() -> Lucid.statsFacade.updateStats(code));
         }
     }
 
