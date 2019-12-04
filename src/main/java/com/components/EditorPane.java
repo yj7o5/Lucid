@@ -77,7 +77,8 @@ public class EditorPane implements MouseListener {
     }
 
     public void closeEditor(String filename) {
-        if (getActiveEditor().getFileName().equals(filename)) {
+        Editor editor = getActiveEditor();
+        if (editor != null && editor.getFileName().equals(filename)) {
             removeEditorAtIndex(tabs.getSelectedIndex());
         }
     }
